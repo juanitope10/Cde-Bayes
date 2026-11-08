@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
   library(Matrix)
   library(png)
   library(coda)
+  library(readr)
 })
 
 # ------------------------------------------------------------------------------
