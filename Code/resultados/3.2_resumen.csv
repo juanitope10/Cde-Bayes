@@ -1,0 +1,2 @@
+"modelo","nivel_ruido","tiempo_s","neff_min","cvmc_medio","mse","snr","psnr","precision_MAP","precision_contaminada","mse_contaminada","snr_contaminada","beta_media","rho_media","tasa_acept_beta"
+"Ising",0.1,4.26476669311523,1.9518284724424,6.58354035713026,0.00754585266113281,19.4831583806967,21.2229167900273,0.99041748046875,0.8978271484375,0.1021728515625,8.16688644705435,0.66145931535203,0.0949495392373342,0.45

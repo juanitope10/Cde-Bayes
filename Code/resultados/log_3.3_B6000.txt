@@ -1,0 +1,202 @@
+Imágenes en: /home/sosacamargo/Desktop/Cde bayes/imagenes 
+Resultados en: /home/sosacamargo/Desktop/Cde bayes/Code/resultados 
+log|Q| validado (Cholesky disperso vs. espectral) | método activo: cholesky
+Imagen en escala de grises: media = 0.5061 | var = 0.0810
+
+================ sigma_0 = 0.10 ================
+Ruido real: media = 0.0008 | DE = 0.0999 | DE objetivo = 0.10
+10% completado...
+   iter 600 | mu = 0.6894 | tau = 0.0002 | lam = 32.327 | s2 = 0.00542 | acept(tau,lam) = 32.0% | s = 0.914 | 185s
+20% completado...
+   iter 1200 | mu = 0.7048 | tau = 0.0045 | lam = 31.087 | s2 = 0.00497 | acept(tau,lam) = 29.7% | s = 0.970 | 367s
+30% completado...
+   iter 1800 | mu = 0.5286 | tau = 0.0011 | lam = 32.146 | s2 = 0.00522 | acept(tau,lam) = 27.2% | s = 0.970 | 569s
+40% completado...
+   iter 2400 | mu = 0.5863 | tau = 0.0051 | lam = 34.223 | s2 = 0.00597 | acept(tau,lam) = 26.1% | s = 0.970 | 779s
+50% completado...
+   iter 3000 | mu = 0.4893 | tau = 0.0041 | lam = 32.422 | s2 = 0.00545 | acept(tau,lam) = 24.8% | s = 0.970 | 1049s
+60% completado...
+   iter 3600 | mu = 0.5743 | tau = 0.0009 | lam = 33.084 | s2 = 0.00541 | acept(tau,lam) = 24.3% | s = 0.970 | 1248s
+70% completado...
+   iter 4200 | mu = 0.6351 | tau = 0.0028 | lam = 33.619 | s2 = 0.00549 | acept(tau,lam) = 23.6% | s = 0.970 | 5980s
+80% completado...
+   iter 4800 | mu = 0.6031 | tau = 0.0017 | lam = 33.870 | s2 = 0.00562 | acept(tau,lam) = 23.1% | s = 0.970 | 6162s
+90% completado...
+   iter 5400 | mu = 0.4106 | tau = 0.0068 | lam = 32.655 | s2 = 0.00541 | acept(tau,lam) = 23.0% | s = 0.970 | 6470s
+100% completado...
+   iter 6000 | mu = 0.3888 | tau = 0.0009 | lam = 32.076 | s2 = 0.00528 | acept(tau,lam) = 23.1% | s = 0.970 | 6846s
+
+--- Resumen posterior (post burn-in) ---
+
+--- mu ---
+Media = 0.50593 | DE = 0.21369 | n_eff = 6344 | EMC = 0.00268 | CVMC = 0.530%
+IC95% = [0.05837, 0.93773]
+
+--- tau ---
+Media = 0.00269 | DE = 0.00261 | n_eff = 264 | EMC = 0.00016 | CVMC = 5.966%
+IC95% = [0.00011, 0.00998]
+AVISO: CVMC >= 5% (aumentar iteraciones)
+
+--- lambda ---
+Media = 32.33013 | DE = 1.05222 | n_eff = 58 | EMC = 0.13796 | CVMC = 0.427%
+IC95% = [30.42113, 34.42228]
+
+--- sigma^2 ---
+Media = 0.00530 | DE = 0.00027 | n_eff = 75 | EMC = 0.00003 | CVMC = 0.590%
+IC95% = [0.00481, 0.00586]
+
+Tasa de aceptación MH de (tau, lambda) (post burn-in): 21.5%
+s2 real = 0.01000 | media posterior de s2 = 0.00530 | IC95% = [0.00481, 0.00586]
+
+--- Diagnóstico de los X_i (cadena de píxeles adelgazada) ---
+n_eff de X_i: min = 331 | mediana = 1000
+CVMC de X_i (%): mediana = 0.310 | media = 0.805 | max = 5.180
+
+--- IC95% para una selección de píxeles ---
+ pixel fila col     x0      y  media     DE IC95_inf IC95_sup dentro_IC95
+     1    1   1 0.7804 0.6887 0.7178 0.0637   0.5844   0.8365           1
+   128  128   1 0.0980 0.2166 0.1983 0.0646   0.0815   0.3309           1
+  8128   64  64 0.0157 0.1086 0.1024 0.0569  -0.0104   0.2143           1
+ 16384  128 128 0.5686 0.4094 0.4454 0.0642   0.3270   0.5655           0
+  2452   20  20 0.8235 0.8235 0.8490 0.0574   0.7422   0.9627           1
+ 12192   32  96 0.8196 0.6276 0.7123 0.0575   0.5972   0.8275           1
+Cobertura empírica de los IC95% en los 16384 píxeles: 90.8%
+MSE = 0.00445 | SNR = 18.79 dB | PSNR = 23.52 dB
+   (imagen contaminada: MSE = 0.00998 | SNR = 15.29 dB)
+
+================ sigma_0 = 0.05 ================
+Ruido real: media = -0.0003 | DE = 0.0492 | DE objetivo = 0.05
+10% completado...
+   iter 600 | mu = 0.7240 | tau = 0.0003 | lam = 46.342 | s2 = 0.00028 | acept(tau,lam) = 33.0% | s = 1.472 | 289s
+20% completado...
+   iter 1200 | mu = 0.6660 | tau = 0.0020 | lam = 46.008 | s2 = 0.00019 | acept(tau,lam) = 29.8% | s = 1.387 | 572s
+30% completado...
+   iter 1800 | mu = 0.0050 | tau = 0.0016 | lam = 47.590 | s2 = 0.00030 | acept(tau,lam) = 29.1% | s = 1.387 | 842s
+40% completado...
+   iter 2400 | mu = 0.3472 | tau = 0.0026 | lam = 46.252 | s2 = 0.00028 | acept(tau,lam) = 28.2% | s = 1.387 | 1112s
+50% completado...
+   iter 3000 | mu = 0.3661 | tau = 0.0000 | lam = 46.978 | s2 = 0.00025 | acept(tau,lam) = 27.9% | s = 1.387 | 1344s
+60% completado...
+   iter 3600 | mu = 0.5134 | tau = 0.0016 | lam = 47.060 | s2 = 0.00031 | acept(tau,lam) = 27.4% | s = 1.387 | 1583s
+70% completado...
+   iter 4200 | mu = 0.5482 | tau = 0.0078 | lam = 45.767 | s2 = 0.00026 | acept(tau,lam) = 27.0% | s = 1.387 | 1851s
+80% completado...
+   iter 4800 | mu = 0.6534 | tau = 0.0028 | lam = 47.048 | s2 = 0.00027 | acept(tau,lam) = 26.6% | s = 1.387 | 2140s
+90% completado...
+   iter 5400 | mu = 0.4121 | tau = 0.0059 | lam = 47.669 | s2 = 0.00030 | acept(tau,lam) = 26.6% | s = 1.387 | 2446s
+100% completado...
+   iter 6000 | mu = 0.8780 | tau = 0.0005 | lam = 46.991 | s2 = 0.00027 | acept(tau,lam) = 26.7% | s = 1.387 | 2667s
+
+--- Resumen posterior (post burn-in) ---
+
+--- mu ---
+Media = 0.50035 | DE = 0.22837 | n_eff = 3898 | EMC = 0.00366 | CVMC = 0.731%
+IC95% = [0.02267, 0.96212]
+
+--- tau ---
+Media = 0.00211 | DE = 0.00199 | n_eff = 529 | EMC = 0.00009 | CVMC = 4.106%
+IC95% = [0.00010, 0.00776]
+
+--- lambda ---
+Media = 46.83778 | DE = 0.56777 | n_eff = 360 | EMC = 0.02993 | CVMC = 0.064%
+IC95% = [45.78021, 47.96957]
+
+--- sigma^2 ---
+Media = 0.00027 | DE = 0.00003 | n_eff = 23 | EMC = 0.00001 | CVMC = 2.392%
+IC95% = [0.00022, 0.00035]
+
+Tasa de aceptación MH de (tau, lambda) (post burn-in): 25.6%
+s2 real = 0.00250 | media posterior de s2 = 0.00027 | IC95% = [0.00022, 0.00035]
+
+--- Diagnóstico de los X_i (cadena de píxeles adelgazada) ---
+n_eff de X_i: min = 383 | mediana = 1000
+CVMC de X_i (%): mediana = 0.087 | media = 0.232 | max = 1.346
+
+--- IC95% para una selección de píxeles ---
+ pixel fila col     x0       y   media     DE IC95_inf IC95_sup dentro_IC95
+     1    1   1 0.7804  0.6990  0.7010 0.0166   0.6690   0.7309           0
+   128  128   1 0.0980  0.1333  0.1306 0.0163   0.0984   0.1631           0
+  8128   64  64 0.0157 -0.0382 -0.0344 0.0163  -0.0661  -0.0048           0
+ 16384  128 128 0.5686  0.5347  0.5366 0.0162   0.5055   0.5682           0
+  2452   20  20 0.8235  0.8785  0.8754 0.0162   0.8452   0.9056           0
+ 12192   32  96 0.8196  0.7635  0.7660 0.0163   0.7326   0.8004           0
+ 15102  126 118 0.5294  0.4433  0.4496 0.0169   0.4178   0.4830           0
+ 14167   87 111 0.5765  0.5192  0.5213 0.0168   0.4882   0.5525           0
+    49   49   1 0.5922  0.6164  0.6153 0.0168   0.5815   0.6469           1
+Cobertura empírica de los IC95% en los 16384 píxeles: 49.5%
+MSE = 0.00220 | SNR = 21.85 dB | PSNR = 26.57 dB
+   (imagen contaminada: MSE = 0.00242 | SNR = 21.44 dB)
+
+================ sigma_0 = 0.20 ================
+Ruido real: media = 0.0010 | DE = 0.1990 | DE objetivo = 0.20
+10% completado...
+   iter 600 | mu = 0.5480 | tau = 0.0017 | lam = 27.198 | s2 = 0.03351 | acept(tau,lam) = 31.8% | s = 0.967 | 195s
+20% completado...
+   iter 1200 | mu = 0.3426 | tau = 0.0037 | lam = 25.913 | s2 = 0.03213 | acept(tau,lam) = 31.6% | s = 0.675 | 381s
+30% completado...
+   iter 1800 | mu = 0.0935 | tau = 0.0008 | lam = 25.953 | s2 = 0.03321 | acept(tau,lam) = 33.7% | s = 0.675 | 574s
+40% completado...
+   iter 2400 | mu = 0.4916 | tau = 0.0032 | lam = 26.112 | s2 = 0.03202 | acept(tau,lam) = 34.0% | s = 0.675 | 762s
+50% completado...
+   iter 3000 | mu = 0.5735 | tau = 0.0022 | lam = 27.251 | s2 = 0.03307 | acept(tau,lam) = 35.6% | s = 0.675 | 967s
+60% completado...
+   iter 3600 | mu = 0.8136 | tau = 0.0008 | lam = 26.317 | s2 = 0.03310 | acept(tau,lam) = 35.3% | s = 0.675 | 1164s
+70% completado...
+   iter 4200 | mu = 0.3814 | tau = 0.0025 | lam = 28.618 | s2 = 0.03265 | acept(tau,lam) = 35.6% | s = 0.675 | 1349s
+80% completado...
+   iter 4800 | mu = 0.5663 | tau = 0.0033 | lam = 27.627 | s2 = 0.03330 | acept(tau,lam) = 36.0% | s = 0.675 | 1524s
+90% completado...
+   iter 5400 | mu = 0.7863 | tau = 0.0014 | lam = 25.725 | s2 = 0.03183 | acept(tau,lam) = 35.9% | s = 0.675 | 1703s
+100% completado...
+   iter 6000 | mu = 0.4773 | tau = 0.0071 | lam = 26.897 | s2 = 0.03355 | acept(tau,lam) = 36.1% | s = 0.675 | 1881s
+
+--- Resumen posterior (post burn-in) ---
+
+--- mu ---
+Media = 0.50702 | DE = 0.21715 | n_eff = 5000 | EMC = 0.00307 | CVMC = 0.606%
+IC95% = [0.05598, 0.95760]
+
+--- tau ---
+Media = 0.00264 | DE = 0.00242 | n_eff = 321 | EMC = 0.00014 | CVMC = 5.120%
+IC95% = [0.00011, 0.00906]
+AVISO: CVMC >= 5% (aumentar iteraciones)
+
+--- lambda ---
+Media = 27.29582 | DE = 1.16001 | n_eff = 52 | EMC = 0.16040 | CVMC = 0.588%
+IC95% = [25.24380, 29.77023]
+
+--- sigma^2 ---
+Media = 0.03309 | DE = 0.00063 | n_eff = 156 | EMC = 0.00005 | CVMC = 0.153%
+IC95% = [0.03185, 0.03436]
+
+Tasa de aceptación MH de (tau, lambda) (post burn-in): 37.2%
+s2 real = 0.04000 | media posterior de s2 = 0.03309 | IC95% = [0.03185, 0.03436]
+
+--- Diagnóstico de los X_i (cadena de píxeles adelgazada) ---
+n_eff de X_i: min = 450 | mediana = 1000
+CVMC de X_i (%): mediana = 0.518 | media = 1.302 | max = 9.982
+
+--- IC95% para una selección de píxeles ---
+ pixel fila col     x0       y   media     DE IC95_inf IC95_sup dentro_IC95
+     1    1   1 0.7804  0.7314  0.7594 0.1212   0.5247   0.9753           1
+   128  128   1 0.0980  0.0362  0.0672 0.1207  -0.1659   0.2955           1
+  8128   64  64 0.0157 -0.2101 -0.0652 0.0942  -0.2371   0.1209           1
+ 16384  128 128 0.5686  0.3822  0.5064 0.1200   0.2563   0.7529           1
+  2452   20  20 0.8235  1.0052  0.8464 0.0953   0.6509   1.0326           1
+ 12192   32  96 0.8196  0.9018  0.8918 0.0939   0.7136   1.0774           1
+ 16257    1 128 0.7451  0.6940  0.7115 0.1225   0.4649   0.9696           1
+Cobertura empírica de los IC95% en los 16384 píxeles: 97.4%
+MSE = 0.00623 | SNR = 17.33 dB | PSNR = 22.05 dB
+   (imagen contaminada: MSE = 0.03960 | SNR = 9.30 dB)
+
+================ COMPARACIÓN ENTRE NIVELES DE RUIDO (grises) ================
+ nivel_ruido tiempo_s neff_min cvmc_medio    mse     snr    psnr sigma2_media
+        0.10 6846.001  58.1716     0.8048 0.0045 18.7940 23.5161       0.0053
+        0.05 2667.452  23.2037     0.2319 0.0022 21.8507 26.5727       0.0003
+        0.20 1881.460  52.3000     1.3023 0.0062 17.3309 22.0530       0.0331
+ sigma2_real acept_mh cobertura_IC95
+      0.0100   0.2148         0.9083
+      0.0025   0.2564         0.4945
+      0.0400   0.3722         0.9736
+
+Resultados guardados en: /home/sosacamargo/Desktop/Cde bayes/Code/resultados 
