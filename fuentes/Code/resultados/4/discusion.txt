@@ -1,0 +1,29 @@
+ANÁLISIS BREVE DE HALLAZGOS
+===========================
+
+1) Papel del suavizado espacial.
+En el modelo de Ising el parámetro beta controla la probabilidad de que dos píxeles vecinos compartan estado: con beta posterior tipicamente > 0.4 (por encima del valor crítico log(1+sqrt(2))/2 = 0.440 de la retícula cuadrada) la previa favorece regiones homogéneas y la regla MAP limpia el ruido aislado preservando los bordes de la silueta (ver precisión por tipo de píxel en la salida de 3.2.R). En los GMRF, lambda pondera las diferencias cuadráticas entre vecinos: lambda grande produce restauraciones mas suaves, mientras que tau (grises) y Omega (RGB) controlan la variabilidad marginal. La imagen restaurada de escala de grises alcanza un MSE 0.00446 (SNR 18.78 dB) frente a 0.00998 del ruido puro, una mejora del 55.3%, y el RGB global alcanza MSE 0.00427 (SNR 18.48 dB), mejora del 57.5%.
+
+2) Efecto de la acumulación de ruido en la incertidumbre posterior.
+Al pasar de sigma0 = 0.05 a 0.20 (rho0 = 0.05 a 0.20 en el binario) el MSE
+aumenta y la SNR cae de forma consistente en los tres modelos. La
+distribución posterior lo refleja: las desviaciones estándar posteriores de
+los píxeles crecen con el ruido y los mapas de incertidumbre se encienden en
+las zonas de bordes y detalles. La comparación de sigma^2 posterior contra el
+valor simulado en escala de grises revela subestimación sistemática:
+medias posteriores 0.00027, 0.00529 y 0.03309 frente a valores reales 0.00250, 0.01000 y 0.04000 (sigma0 = 0.05, 0.10, 0.20).
+Este sesgo es más fuerte a ruido BAJO y se debe a la confusión entre la
+varianza del ruido y la rugosidad del campo latente: a sigma0 = 0.05 la
+posterior atribuye el ruido fino a la textura de X (sigma^2 colapsa y la
+restauración apenas mejora el dato contaminado), mientras que a ruido
+moderado y alto el modelo separa mejor ambos componentes y la mejora de MSE
+supera el 50%. Es una propiedad del modelo GMRF con varianza de ruido
+desconocida, no un defecto del muestreador (verificado con cadenas largas y
+distintas inicializaciones). En RGB, SIGMA muestra el mismo comportamiento
+en su diagonal e induce correlaciones residuales entre canales.
+
+3) Ventajas y limitaciones computacionales del enfoque MCMC.
+Los tres algoritmos procesan P = 16,384 píxeles con algebra dispersa (Matrix) y factorizaciones de Cholesky: los tiempos medianos por nivel de ruido fueron ~29 min (Ising), ~8 min (grises) y ~26 min (RGB). Las ventajas: inferencia completa (medias, varianzas e intervalos por píxel), sin supuestos de normalidad para la imagen binaria y con propagación natural de la incertidumbre. Las limitaciones: (i) costo que crece rapidamente con la resolucion (cada barrido toca todos los píxeles y cada paso MH exige factorizar matrices de precision); (ii) el algoritmo de intercambio para beta depende de barridos auxiliares K (aproximación), y la mezcla de beta, tau y lambda exige cadenas largas para alcanzar CVMC < 5%; (iii) los modelos GMRF suavizan bordes agudos (lambda global), mientras que Ising, al ser discreto, los preserva mejor.
+
+4) Comparación entre modelos.
+El modelo binario recupera el 98.8% de los píxeles con rho0 = 0.10 (vs 89.8% del dato contaminado) y estima rho con sesgo minimo. En escala de grises la mejora MSE es del 55.3% y en RGB del 57.5%, con prestaciones similares entre canales (ver tabla por canal). En conjunto, incorporar dependencia espacial mejora la restauración en todos los niveles de ruido, con ganancias relativas mayores a ruido moderado y una incertidumbre posterior que crece de forma coherente con la contaminación.

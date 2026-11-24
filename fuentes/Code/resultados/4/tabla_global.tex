@@ -1,0 +1,40 @@
+% Tabla comparativa global - Restauración bayesiana de imágenes
+% Generada por Code/4.R (no editar a mano)
+\begin{table}[htbp]
+\centering
+\caption{Desempeño de los tres modelos de restauración bayesiana bajo distintos niveles de ruido. $n_{\mathrm{eff}}$ mín. calculado sobre parámetros escalares y píxeles; CVMC medio sobre los parámetros escalares (criterio CVMC $< 5\%$).}
+\label{tab:comparativa}
+\small
+\begin{tabular}{llrrrrrrr}
+\hline
+Modelo & Ruido & Tiempo (min) & $n_{\mathrm{eff}}$ mín. & CVMC (\%) & MSE & SNR (dB) & PSNR (dB) & Precisión (\%) \\
+\hline
+Ising (binaria) & rho0 = 0.10 & 98.5 & 32 & 0.25 & 0.01110 & 17.81 & 19.55 & 98.77 \\
+Ising (binaria) & rho0 = 0.05 & 29.5 & 66 & 0.24 & 0.00616 & 20.36 & 22.10 & 99.43 \\
+Ising (binaria) & rho0 = 0.20 & 26.0 & 37 & 0.24 & 0.01875 & 15.53 & 17.27 & 97.79 \\
+GMRF (grises) & sigma0 = 0.10 & 8.3 & 245 & 0.24 & 0.00446 & 18.78 & 23.51 & -- \\
+GMRF (grises) & sigma0 = 0.05 & 8.2 & 116 & 0.16 & 0.00220 & 21.85 & 26.57 & -- \\
+GMRF (grises) & sigma0 = 0.20 & 7.2 & 77 & 0.34 & 0.00623 & 17.33 & 22.06 & -- \\
+GMRF multivariado (RGB) & sigma0 = 0.10 & 42.8 & 13 & 1.28 & 0.00427 & 18.48 & 23.70 & -- \\
+GMRF multivariado (RGB) & sigma0 = 0.05 & 26.1 & 26 & 0.82 & 0.00158 & 22.78 & 28.01 & -- \\
+GMRF multivariado (RGB) & sigma0 = 0.20 & 25.4 & 14 & 1.03 & 0.01214 & 13.93 & 19.16 & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+% MSE y SNR por canal RGB
+\begin{table}[htbp]
+\centering
+\caption{MSE y SNR por canal del modelo GMRF multivariado.}
+\label{tab:rgb_canales}
+\small
+\begin{tabular}{lrrrrrr}
+\hline
+Ruido & MSE R & MSE G & MSE B & SNR R & SNR G & SNR B \\
+\hline
+sigma0 = 0.10 & 0.00448 & 0.00378 & 0.00454 & 19.60 & 18.36 & 17.10 \\
+sigma0 = 0.05 & 0.00189 & 0.00109 & 0.00177 & 23.34 & 23.78 & 21.20 \\
+sigma0 = 0.20 & 0.01168 & 0.01155 & 0.01320 & 15.44 & 13.51 & 12.47 \\
+\hline
+\end{tabular}
+\end{table}

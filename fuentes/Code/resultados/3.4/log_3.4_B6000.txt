@@ -1,0 +1,254 @@
+Imágenes en: /home/sosacamargo/Desktop/Cde bayes/imagenes 
+Resultados en: /home/sosacamargo/Desktop/Cde bayes/Code/resultados 
+log|I + lam*L| validado | método activo: cholesky
+Imagen RGB: medias por canal = (0.555, 0.415, 0.379)
+
+================ sigma_0 = 0.10 ================
+Ruido real por canal (DE): 0.0999 | 0.0998 | 0.1009
+10% completado...
+   iter 600 | lam = 141.509 | mu = (0.542, 0.407, 0.367) | acept(lam) = 22.3% | s = 0.032 | 279s
+20% completado...
+   iter 1200 | lam = 313.650 | mu = (0.543, 0.386, 0.352) | acept(lam) = 26.1% | s = 0.025 | 563s
+30% completado...
+   iter 1800 | lam = 418.847 | mu = (0.536, 0.416, 0.376) | acept(lam) = 27.1% | s = 0.025 | 824s
+40% completado...
+   iter 2400 | lam = 468.136 | mu = (0.543, 0.446, 0.393) | acept(lam) = 27.5% | s = 0.025 | 1137s
+50% completado...
+   iter 3000 | lam = 536.949 | mu = (0.554, 0.418, 0.403) | acept(lam) = 28.3% | s = 0.025 | 5936s
+60% completado...
+   iter 3600 | lam = 430.236 | mu = (0.625, 0.432, 0.384) | acept(lam) = 28.4% | s = 0.025 | 6217s
+70% completado...
+   iter 4200 | lam = 429.538 | mu = (0.494, 0.353, 0.328) | acept(lam) = 28.6% | s = 0.025 | 6745s
+80% completado...
+   iter 4800 | lam = 506.878 | mu = (0.565, 0.456, 0.411) | acept(lam) = 28.1% | s = 0.025 | 7295s
+90% completado...
+   iter 5400 | lam = 504.421 | mu = (0.593, 0.471, 0.442) | acept(lam) = 28.5% | s = 0.025 | 7638s
+100% completado...
+   iter 6000 | lam = 596.747 | mu = (0.583, 0.434, 0.380) | acept(lam) = 28.8% | s = 0.025 | 8005s
+
+--- Resumen posterior de los parámetros escalares (post burn-in) ---
+mu_R           Media =   0.55517 | DE =  0.03527 | n_eff =   5000 | EMC =  0.00050 | CVMC =    0.090% | IC95% = [0.48438, 0.62446]
+mu_G           Media =   0.41553 | DE =  0.03384 | n_eff =   5000 | EMC =  0.00048 | CVMC =    0.115% | IC95% = [0.35040, 0.48059]
+mu_B           Media =   0.37802 | DE =  0.03583 | n_eff =   5000 | EMC =  0.00051 | CVMC =    0.134% | IC95% = [0.30774, 0.44751]
+Sigma_11       Media =   0.00480 | DE =  0.00018 | n_eff =     71 | EMC =  0.00002 | CVMC =    0.451% | IC95% = [0.00442, 0.00516]  (media ~ 0: CVMC no es interpretable)
+Sigma_21       Media =  -0.00266 | DE =  0.00010 | n_eff =     59 | EMC =  0.00001 | CVMC =    0.495% | IC95% = [-0.00286, -0.00247]  (media ~ 0: CVMC no es interpretable)
+Sigma_31       Media =  -0.00174 | DE =  0.00012 | n_eff =    109 | EMC =  0.00001 | CVMC =    0.650% | IC95% = [-0.00196, -0.00150]  (media ~ 0: CVMC no es interpretable)
+Sigma_22       Media =   0.00641 | DE =  0.00016 | n_eff =     34 | EMC =  0.00003 | CVMC =    0.438% | IC95% = [0.00610, 0.00674]  (media ~ 0: CVMC no es interpretable)
+Sigma_32       Media =  -0.00350 | DE =  0.00011 | n_eff =     39 | EMC =  0.00002 | CVMC =    0.498% | IC95% = [-0.00370, -0.00328]  (media ~ 0: CVMC no es interpretable)
+Sigma_33       Media =   0.00545 | DE =  0.00017 | n_eff =     56 | EMC =  0.00002 | CVMC =    0.420% | IC95% = [0.00512, 0.00579]  (media ~ 0: CVMC no es interpretable)
+Omega_11       Media =   0.17710 | DE =  0.03390 | n_eff =      9 | EMC =  0.01113 | CVMC =    6.287% | IC95% = [0.13534, 0.27153]  <-- AVISO CVMC >= 5%
+Omega_21       Media =  -0.26020 | DE =  0.05297 | n_eff =     13 | EMC =  0.01446 | CVMC =    5.557% | IC95% = [-0.39908, -0.18527]  <-- AVISO CVMC >= 5%
+Omega_31       Media =   0.11449 | DE =  0.02611 | n_eff =     20 | EMC =  0.00583 | CVMC =    5.090% | IC95% = [0.07066, 0.17842]  <-- AVISO CVMC >= 5%
+Omega_22       Media =   0.73999 | DE =  0.15390 | n_eff =     11 | EMC =  0.04645 | CVMC =    6.277% | IC95% = [0.52370, 1.16689]  <-- AVISO CVMC >= 5%
+Omega_32       Media =  -0.47846 | DE =  0.10262 | n_eff =     12 | EMC =  0.02958 | CVMC =    6.182% | IC95% = [-0.76770, -0.33286]  <-- AVISO CVMC >= 5%
+Omega_33       Media =   0.39257 | DE =  0.08343 | n_eff =     11 | EMC =  0.02485 | CVMC =    6.330% | IC95% = [0.28193, 0.64251]  <-- AVISO CVMC >= 5%
+lambda         Media = 458.46994 | DE = 67.31130 | n_eff =      5 | EMC = 29.72063 | CVMC =    6.483% | IC95% = [274.60985, 560.46232]  <-- AVISO CVMC >= 5%
+
+Tasa de aceptación MH de lambda (post burn-in): 29.6%
+
+--- SIGMA: real vs media posterior (por canal, diagonal) ---
+            [,1]    [,2]    [,3]
+real      0.0100 0.01000 0.01000
+posterior 0.0048 0.00641 0.00545
+Correlación de ruido real = 0 (I_3) | correlaciones posteriores:
+       [,1]   [,2]   [,3]
+[1,]  1.000 -0.481 -0.341
+[2,] -0.481  1.000 -0.592
+[3,] -0.341 -0.592  1.000
+
+--- Diagnóstico de los X_i (cadena de píxeles adelgazada) ---
+Canal R: n_eff min = 67 | mediana = 250 | CVMC medio = 1.205% | max = 8.765%
+Canal G: n_eff min = 41 | mediana = 250 | CVMC medio = 0.948% | max = 7.053%
+Canal B: n_eff min = 51 | mediana = 250 | CVMC medio = 1.519% | max = 8.396%
+
+--- IC95% para una selección de píxeles (canal R) ---
+ canal pixel fila col     x0       y   media     DE IC95_inf IC95_sup
+     R     1    1   1 0.6039  0.5122  0.5719 0.0524   0.4773   0.6784
+     R   128  128   1 0.7216  0.8401  0.8251 0.0507   0.7269   0.9181
+     R  8128   64  64 0.0039  0.0968  0.1036 0.0431   0.0167   0.1786
+     R 16384  128 128 0.0353 -0.1239 -0.0851 0.0517  -0.1963   0.0158
+     R  2452   20  20 0.7490  0.7490  0.7951 0.0434   0.7169   0.8788
+     R 12192   32  96 0.9373  0.7453  0.7919 0.0438   0.7203   0.8818
+     R 16257    1 128 0.4902  0.4140  0.4611 0.0527   0.3500   0.5692
+ dentro_IC95
+        TRUE
+       FALSE
+       FALSE
+       FALSE
+        TRUE
+       FALSE
+        TRUE
+Cobertura empírica IC95% por canal: R = 78.2% | G = 57.2% | B = 71.6%
+MSE = 0.00427 | SNR = 18.47 dB | PSNR = 23.70 dB (global)
+   por canal: MSE = (0.00451, 0.00377, 0.00453) | SNR = (19.57, 18.37, 17.12) dB
+   (imagen contaminada: MSE = 0.01004 | SNR = 14.76 dB)
+
+================ sigma_0 = 0.05 ================
+Ruido real por canal (DE): 0.0492 | 0.0500 | 0.0500
+10% completado...
+   iter 600 | lam = 216.435 | mu = (0.534, 0.412, 0.390) | acept(lam) = 22.3% | s = 0.032 | 303s
+20% completado...
+   iter 1200 | lam = 395.828 | mu = (0.566, 0.411, 0.388) | acept(lam) = 25.2% | s = 0.034 | 609s
+30% completado...
+   iter 1800 | lam = 457.521 | mu = (0.540, 0.413, 0.356) | acept(lam) = 25.1% | s = 0.034 | 936s
+40% completado...
+   iter 2400 | lam = 538.006 | mu = (0.582, 0.453, 0.405) | acept(lam) = 24.1% | s = 0.034 | 1228s
+50% completado...
+   iter 3000 | lam = 553.395 | mu = (0.598, 0.472, 0.417) | acept(lam) = 23.8% | s = 0.034 | 1480s
+60% completado...
+   iter 3600 | lam = 616.799 | mu = (0.509, 0.396, 0.355) | acept(lam) = 23.6% | s = 0.034 | 1729s
+70% completado...
+   iter 4200 | lam = 622.119 | mu = (0.577, 0.429, 0.370) | acept(lam) = 23.8% | s = 0.034 | 1981s
+80% completado...
+   iter 4800 | lam = 598.977 | mu = (0.594, 0.454, 0.417) | acept(lam) = 23.7% | s = 0.034 | 2241s
+90% completado...
+   iter 5400 | lam = 571.362 | mu = (0.573, 0.421, 0.378) | acept(lam) = 23.1% | s = 0.034 | 2490s
+100% completado...
+   iter 6000 | lam = 541.682 | mu = (0.558, 0.415, 0.393) | acept(lam) = 23.3% | s = 0.034 | 2744s
+
+--- Resumen posterior de los parámetros escalares (post burn-in) ---
+mu_R           Media =   0.55507 | DE =  0.03198 | n_eff =   5000 | EMC =  0.00045 | CVMC =    0.081% | IC95% = [0.49211, 0.61749]
+mu_G           Media =   0.41571 | DE =  0.03136 | n_eff =   5000 | EMC =  0.00044 | CVMC =    0.107% | IC95% = [0.35472, 0.47580]
+mu_B           Media =   0.37911 | DE =  0.03339 | n_eff =   4855 | EMC =  0.00048 | CVMC =    0.126% | IC95% = [0.31283, 0.44525]
+Sigma_11       Media =   0.00049 | DE =  0.00005 | n_eff =     31 | EMC =  0.00001 | CVMC =    1.708% | IC95% = [0.00040, 0.00058]  (media ~ 0: CVMC no es interpretable)
+Sigma_21       Media =  -0.00046 | DE =  0.00003 | n_eff =     68 | EMC =  0.00000 | CVMC =    0.870% | IC95% = [-0.00052, -0.00039]  (media ~ 0: CVMC no es interpretable)
+Sigma_31       Media =   0.00017 | DE =  0.00003 | n_eff =     28 | EMC =  0.00001 | CVMC =    3.878% | IC95% = [0.00011, 0.00024]  (media ~ 0: CVMC no es interpretable)
+Sigma_22       Media =   0.00151 | DE =  0.00007 | n_eff =     29 | EMC =  0.00001 | CVMC =    0.804% | IC95% = [0.00138, 0.00162]  (media ~ 0: CVMC no es interpretable)
+Sigma_32       Media =  -0.00077 | DE =  0.00003 | n_eff =     61 | EMC =  0.00000 | CVMC =    0.524% | IC95% = [-0.00083, -0.00070]  (media ~ 0: CVMC no es interpretable)
+Sigma_33       Media =   0.00071 | DE =  0.00005 | n_eff =     27 | EMC =  0.00001 | CVMC =    1.412% | IC95% = [0.00062, 0.00082]  (media ~ 0: CVMC no es interpretable)
+Omega_11       Media =   0.20050 | DE =  0.02698 | n_eff =      7 | EMC =  0.01025 | CVMC =    5.112% | IC95% = [0.16398, 0.26661]  <-- AVISO CVMC >= 5%
+Omega_21       Media =  -0.25343 | DE =  0.03653 | n_eff =     12 | EMC =  0.01063 | CVMC =    4.196% | IC95% = [-0.34277, -0.19846]
+Omega_31       Media =   0.08899 | DE =  0.01492 | n_eff =     22 | EMC =  0.00317 | CVMC =    3.558% | IC95% = [0.06349, 0.12525]
+Omega_22       Media =   0.62562 | DE =  0.09233 | n_eff =     13 | EMC =  0.02539 | CVMC =    4.059% | IC95% = [0.49184, 0.85636]
+Omega_32       Media =  -0.36759 | DE =  0.05554 | n_eff =     13 | EMC =  0.01545 | CVMC =    4.202% | IC95% = [-0.50767, -0.28671]
+Omega_33       Media =   0.30808 | DE =  0.04535 | n_eff =     10 | EMC =  0.01414 | CVMC =    4.590% | IC95% = [0.24606, 0.42576]
+lambda         Media = 541.64434 | DE = 65.29614 | n_eff =      4 | EMC = 32.19589 | CVMC =    5.944% | IC95% = [387.18023, 631.51443]  <-- AVISO CVMC >= 5%
+
+Tasa de aceptación MH de lambda (post burn-in): 22.9%
+
+--- SIGMA: real vs media posterior (por canal, diagonal) ---
+             [,1]    [,2]    [,3]
+real      0.00250 0.00250 0.00250
+posterior 0.00049 0.00151 0.00071
+Correlación de ruido real = 0 (I_3) | correlaciones posteriores:
+       [,1]   [,2]   [,3]
+[1,]  1.000 -0.536  0.290
+[2,] -0.536  1.000 -0.749
+[3,]  0.290 -0.749  1.000
+
+--- Diagnóstico de los X_i (cadena de píxeles adelgazada) ---
+Canal R: n_eff min = 51 | mediana = 250 | CVMC medio = 0.529% | max = 3.895%
+Canal G: n_eff min = 55 | mediana = 250 | CVMC medio = 0.796% | max = 4.908%
+Canal B: n_eff min = 74 | mediana = 250 | CVMC medio = 0.757% | max = 3.979%
+
+--- IC95% para una selección de píxeles (canal R) ---
+ canal pixel fila col     x0       y   media     DE IC95_inf IC95_sup
+     R     1    1   1 0.6039  0.5226  0.5327 0.0188   0.4939   0.5701
+     R   128  128   1 0.7216  0.7568  0.7373 0.0194   0.7016   0.7763
+     R  8128   64  64 0.0039 -0.0500 -0.0346 0.0181  -0.0713   0.0020
+     R 16384  128 128 0.0353  0.0013  0.0108 0.0194  -0.0237   0.0543
+     R  2452   20  20 0.7490  0.8040  0.7975 0.0181   0.7606   0.8302
+     R 12192   32  96 0.9373  0.8811  0.9001 0.0182   0.8631   0.9386
+ dentro_IC95
+       FALSE
+        TRUE
+       FALSE
+        TRUE
+       FALSE
+        TRUE
+Cobertura empírica IC95% por canal: R = 57.4% | G = 76.7% | B = 58.0%
+MSE = 0.00158 | SNR = 22.78 dB | PSNR = 28.00 dB (global)
+   por canal: MSE = (0.00189, 0.00109, 0.00177) | SNR = (23.34, 23.78, 21.19) dB
+   (imagen contaminada: MSE = 0.00248 | SNR = 20.84 dB)
+
+================ sigma_0 = 0.20 ================
+Ruido real por canal (DE): 0.1990 | 0.2006 | 0.1977
+10% completado...
+   iter 600 | lam = 86.424 | mu = (0.562, 0.412, 0.374) | acept(lam) = 23.5% | s = 0.048 | 153s
+20% completado...
+   iter 1200 | lam = 173.786 | mu = (0.582, 0.427, 0.389) | acept(lam) = 25.6% | s = 0.030 | 296s
+30% completado...
+   iter 1800 | lam = 221.027 | mu = (0.547, 0.404, 0.363) | acept(lam) = 25.4% | s = 0.030 | 443s
+40% completado...
+   iter 2400 | lam = 257.350 | mu = (0.490, 0.344, 0.303) | acept(lam) = 26.0% | s = 0.030 | 589s
+50% completado...
+   iter 3000 | lam = 289.808 | mu = (0.553, 0.418, 0.376) | acept(lam) = 26.0% | s = 0.030 | 730s
+60% completado...
+   iter 3600 | lam = 330.769 | mu = (0.490, 0.330, 0.288) | acept(lam) = 26.4% | s = 0.030 | 874s
+70% completado...
+   iter 4200 | lam = 365.644 | mu = (0.515, 0.364, 0.323) | acept(lam) = 26.4% | s = 0.030 | 1013s
+80% completado...
+   iter 4800 | lam = 316.436 | mu = (0.536, 0.391, 0.330) | acept(lam) = 26.4% | s = 0.030 | 1154s
+90% completado...
+   iter 5400 | lam = 399.646 | mu = (0.552, 0.440, 0.380) | acept(lam) = 26.6% | s = 0.030 | 1294s
+100% completado...
+   iter 6000 | lam = 379.395 | mu = (0.555, 0.404, 0.377) | acept(lam) = 26.6% | s = 0.030 | 1434s
+
+--- Resumen posterior de los parámetros escalares (post burn-in) ---
+mu_R           Media =   0.55639 | DE =  0.03705 | n_eff =   5000 | EMC =  0.00052 | CVMC =    0.094% | IC95% = [0.48341, 0.62870]
+mu_G           Media =   0.41639 | DE =  0.03629 | n_eff =   5000 | EMC =  0.00051 | CVMC =    0.123% | IC95% = [0.34362, 0.48803]
+mu_B           Media =   0.38243 | DE =  0.03843 | n_eff =   5000 | EMC =  0.00054 | CVMC =    0.142% | IC95% = [0.30519, 0.45832]
+Sigma_11       Media =   0.02624 | DE =  0.00069 | n_eff =     93 | EMC =  0.00007 | CVMC =    0.272% | IC95% = [0.02484, 0.02755]
+Sigma_21       Media =  -0.01005 | DE =  0.00049 | n_eff =     46 | EMC =  0.00007 | CVMC =    0.716% | IC95% = [-0.01099, -0.00909]
+Sigma_31       Media =  -0.00897 | DE =  0.00055 | n_eff =     32 | EMC =  0.00010 | CVMC =    1.078% | IC95% = [-0.00999, -0.00790]  (media ~ 0: CVMC no es interpretable)
+Sigma_22       Media =   0.02803 | DE =  0.00066 | n_eff =     75 | EMC =  0.00008 | CVMC =    0.272% | IC95% = [0.02681, 0.02940]
+Sigma_32       Media =  -0.01205 | DE =  0.00058 | n_eff =     19 | EMC =  0.00013 | CVMC =    1.112% | IC95% = [-0.01318, -0.01095]
+Sigma_33       Media =   0.02483 | DE =  0.00078 | n_eff =     49 | EMC =  0.00011 | CVMC =    0.447% | IC95% = [0.02335, 0.02627]
+Omega_11       Media =   0.18649 | DE =  0.04861 | n_eff =      7 | EMC =  0.01826 | CVMC =    9.789% | IC95% = [0.12912, 0.30533]  <-- AVISO CVMC >= 5%
+Omega_21       Media =  -0.26558 | DE =  0.06979 | n_eff =      9 | EMC =  0.02338 | CVMC =    8.805% | IC95% = [-0.43977, -0.17049]  <-- AVISO CVMC >= 5%
+Omega_31       Media =   0.10828 | DE =  0.03179 | n_eff =     15 | EMC =  0.00832 | CVMC =    7.686% | IC95% = [0.06243, 0.18854]  <-- AVISO CVMC >= 5%
+Omega_22       Media =   0.77983 | DE =  0.21790 | n_eff =      6 | EMC =  0.08973 | CVMC =   11.506% | IC95% = [0.47888, 1.29698]  <-- AVISO CVMC >= 5%
+Omega_32       Media =  -0.51022 | DE =  0.14783 | n_eff =      6 | EMC =  0.06124 | CVMC =   12.002% | IC95% = [-0.86124, -0.30244]  <-- AVISO CVMC >= 5%
+Omega_33       Media =   0.42084 | DE =  0.12454 | n_eff =      5 | EMC =  0.05399 | CVMC =   12.829% | IC95% = [0.25338, 0.71157]  <-- AVISO CVMC >= 5%
+lambda         Media = 304.54262 | DE = 73.69144 | n_eff =      2 | EMC = 50.72958 | CVMC =   16.658% | IC95% = [153.21825, 421.82933]  <-- AVISO CVMC >= 5%
+
+Tasa de aceptación MH de lambda (post burn-in): 26.9%
+
+--- SIGMA: real vs media posterior (por canal, diagonal) ---
+             [,1]    [,2]    [,3]
+real      0.04000 0.04000 0.04000
+posterior 0.02624 0.02803 0.02483
+Correlación de ruido real = 0 (I_3) | correlaciones posteriores:
+       [,1]   [,2]   [,3]
+[1,]  1.000 -0.371 -0.351
+[2,] -0.371  1.000 -0.457
+[3,] -0.351 -0.457  1.000
+
+--- Diagnóstico de los X_i (cadena de píxeles adelgazada) ---
+Canal R: n_eff min = 61 | mediana = 250 | CVMC medio = 1.936% | max = 15.224%
+Canal G: n_eff min = 48 | mediana = 250 | CVMC medio = 1.810% | max = 12.066%
+Canal B: n_eff min = 55 | mediana = 250 | CVMC medio = 2.495% | max = 17.578%
+
+--- IC95% para una selección de píxeles (canal R) ---
+ canal pixel fila col     x0       y   media     DE IC95_inf IC95_sup
+     R     1    1   1 0.6039  0.5549  0.6988 0.0963   0.5212   0.8918
+     R   128  128   1 0.7216  0.6597  0.7049 0.0975   0.5131   0.8902
+     R  8128   64  64 0.0039 -0.2218 -0.1645 0.0776  -0.3078  -0.0247
+     R 16384  128 128 0.0353 -0.1511 -0.0765 0.0966  -0.2393   0.1282
+     R  2452   20  20 0.7490  0.9307  0.7894 0.0776   0.6384   0.9538
+     R 12192   32  96 0.9373  1.0195  0.9727 0.0751   0.8399   1.1421
+     R 16257    1 128 0.4902  0.4390  0.4759 0.0982   0.2914   0.6741
+ dentro_IC95
+        TRUE
+        TRUE
+       FALSE
+        TRUE
+        TRUE
+        TRUE
+        TRUE
+Cobertura empírica IC95% por canal: R = 82.6% | G = 65.3% | B = 73.9%
+MSE = 0.01217 | SNR = 13.93 dB | PSNR = 19.15 dB (global)
+   por canal: MSE = (0.01169, 0.01161, 0.01320) | SNR = (15.44, 13.49, 12.47) dB
+   (imagen contaminada: MSE = 0.03965 | SNR = 8.80 dB)
+
+================ COMPARACIÓN ENTRE NIVELES DE RUIDO (RGB) ================
+ nivel_ruido tiempo_s neff_min cvmc_medio    mse     snr    psnr  mse_R  mse_G
+        0.10 8005.220   5.1293     1.2246 0.0043 18.4723 23.6952 0.0045 0.0038
+        0.05 2743.803   4.1131     0.6947 0.0016 22.7803 28.0032 0.0019 0.0011
+        0.20 1433.717   2.1101     2.0812 0.0122 13.9255 19.1484 0.0117 0.0116
+  mse_B   snr_R   snr_G   snr_B lambda_media acept_mh
+ 0.0045 19.5739 18.3668 17.1193     458.4699   0.2956
+ 0.0018 23.3424 23.7765 21.1947     541.6443   0.2288
+ 0.0132 15.4369 13.4870 12.4727     304.5426   0.2686
+
+Resultados guardados en: /home/sosacamargo/Desktop/Cde bayes/Code/resultados 
