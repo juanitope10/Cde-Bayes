@@ -1,0 +1,63 @@
+Rutas configuradas (Linux)
+  dir_raiz: /home/sosacamargo/Desktop/Cde bayes/fuentes
+  dir_img:  /home/sosacamargo/Desktop/Cde bayes/fuentes/imagenes
+  dir_out:  /home/sosacamargo/Desktop/Cde bayes/fuentes/Code/resultados
+Resultados de verificacion en: /home/sosacamargo/Desktop/Cde bayes/fuentes/Code/resultados/verificacion 
+
+Validacion interna de la log-verosimilitud marginal y del muestreador...
+  OK (ll 3.3 y 3.4 vs densa: error < 1e-8; covarianza del muestreador dentro del ruido de MC)
+
+----- Log-verosimilitud marginal y DIC -----
+  3.3 | sigma0_0.10: ll media = 10586.4 | p_D = 3.3 | DIC = -21169.5
+  3.3 | sigma0_0.05: ll media = 17333.0 | p_D = 2.3 | DIC = -34663.7
+  3.3 | sigma0_0.20: ll media = 1598.0 | p_D = 3.6 | DIC = -3192.4
+  3.4 | sigma0_0.10: ll media = 30453.6 | p_D = 12.6 | DIC = -60894.6
+  3.4 | sigma0_0.05: ll media = 52541.8 | p_D = 12.2 | DIC = -105071.4
+  3.4 | sigma0_0.20: ll media = 3474.8 | p_D = 13.8 | DIC = -6935.8
+
+----- Probabilidades posteriores de contrastes -----
+      modelo   escenario                contraste   prob
+       Ising    rho_0.10     P(beta > beta_c | y) 1.0000
+       Ising    rho_0.10        P(rho < rho0 | y) 1.0000
+       Ising    rho_0.05     P(beta > beta_c | y) 1.0000
+       Ising    rho_0.05        P(rho < rho0 | y) 1.0000
+       Ising    rho_0.20     P(beta > beta_c | y) 1.0000
+       Ising    rho_0.20        P(rho < rho0 | y) 1.0000
+ GMRF grises sigma0_0.10   P(sigma2 < 0.0100 | y) 1.0000
+ GMRF grises sigma0_0.10        P(tau < 0.01 | y) 0.9854
+ GMRF grises sigma0_0.10       P(lambda > 20 | y) 1.0000
+ GMRF grises sigma0_0.05   P(sigma2 < 0.0025 | y) 1.0000
+ GMRF grises sigma0_0.05        P(tau < 0.01 | y) 0.9927
+ GMRF grises sigma0_0.05       P(lambda > 20 | y) 1.0000
+ GMRF grises sigma0_0.20   P(sigma2 < 0.0400 | y) 1.0000
+ GMRF grises sigma0_0.20        P(tau < 0.01 | y) 0.9788
+ GMRF grises sigma0_0.20       P(lambda > 20 | y) 1.0000
+    GMRF RGB sigma0_0.10 P(Sigma_11 < 0.0100 | y) 1.0000
+    GMRF RGB sigma0_0.10 P(Sigma_22 < 0.0100 | y) 1.0000
+    GMRF RGB sigma0_0.10 P(Sigma_33 < 0.0100 | y) 1.0000
+    GMRF RGB sigma0_0.10      P(lambda > 400 | y) 1.0000
+    GMRF RGB sigma0_0.05 P(Sigma_11 < 0.0025 | y) 1.0000
+    GMRF RGB sigma0_0.05 P(Sigma_22 < 0.0025 | y) 1.0000
+    GMRF RGB sigma0_0.05 P(Sigma_33 < 0.0025 | y) 1.0000
+    GMRF RGB sigma0_0.05      P(lambda > 400 | y) 1.0000
+    GMRF RGB sigma0_0.20 P(Sigma_11 < 0.0400 | y) 1.0000
+    GMRF RGB sigma0_0.20 P(Sigma_22 < 0.0400 | y) 1.0000
+    GMRF RGB sigma0_0.20 P(Sigma_33 < 0.0400 | y) 1.0000
+    GMRF RGB sigma0_0.20      P(lambda > 400 | y) 0.0448
+
+----- Prior predictive check -----
+  Simuladas 30 imagenes previas por modelo; cobertura de escalas en prior_predictivo.png
+  media | 3.3 previa [-0.249, 1.665] vs observado (0.506-0.507) | 3.4 previa [0.082, 1.136] vs obs (0.449-0.451)
+  DE | 3.3 previa [0.101, 0.280] vs observado (0.289-0.348) | 3.4 previa [0.094, 0.649] vs obs (0.288-0.308)
+  contraste | 3.3 previa [0.100, 0.247] vs observado (0.074-0.232) | 3.4 previa [0.075, 0.590] vs obs (0.074-0.152)
+
+----- Posterior predictive checks -----
+(replicas desde el posterior; ppp = Pr(t(y*) <= t(y)))
+  3.3 | sigma0_0.10: ppp media = 0.40 | DE = 1.00 | contraste = 0.00
+  3.3 | sigma0_0.05: ppp media = 0.60 | DE = 1.00 | contraste = 0.00
+  3.3 | sigma0_0.20: ppp media = 0.40 | DE = 1.00 | contraste = 0.53
+  3.4 | sigma0_0.10: ppp media = 0.60 | DE = 1.00 | contraste = 0.00
+  3.4 | sigma0_0.05: ppp media = 0.53 | DE = 1.00 | contraste = 0.00
+  3.4 | sigma0_0.20: ppp media = 0.53 | DE = 1.00 | contraste = 0.00
+
+Listo. Archivos en: /home/sosacamargo/Desktop/Cde bayes/fuentes/Code/resultados/verificacion 

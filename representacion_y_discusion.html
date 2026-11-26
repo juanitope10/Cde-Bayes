@@ -3273,7 +3273,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Fecha de publicación</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">21 de noviembre de 2026</p>
+      <p class="date">26 de noviembre de 2026</p>
     </div>
   </div>
   
@@ -3816,7 +3816,7 @@ Cómo leer (y cómo no leer) esta tabla
 </section>
 <section id="papel-de-la-dependencia-espacial" class="level2" data-number="5.2">
 <h2 data-number="5.2" class="anchored" data-anchor-id="papel-de-la-dependencia-espacial"><span class="header-section-number">5.2</span> Papel de la dependencia espacial</h2>
-<p>La dependencia espacial es lo que hace posible la restauración: sin ella (<span class="math inline">\(\beta=0\)</span> o <span class="math inline">\(\lambda=0\)</span>), cada píxel solo tendría su propia observación y la mejor estimación sería la imagen contaminada.</p>
+<p>La dependencia espacial es lo que hace posible la restauración: sin ella (<span class="math inline">\(\beta=0\)</span> o <span class="math inline">\(\lambda=0\)</span>), cada píxel solo tendría su propia observación y la mejor estimación sería la imagen contaminada. Conviene precisar qué significa aquí “dependencia espacial”: es una <strong>suposición de regularización de la previa</strong> (suavidad en los GMRF, segmentación en el Ising), no un hallazgo empírico de procesos espaciales en los datos. Los parámetros <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\lambda\)</span> y <span class="math inline">\(\mathbf{\Omega}\)</span> describen esa regularización; las asociaciones que se reportan (por ejemplo, cómo cambia <span class="math inline">\(\hat\beta\)</span> con el ruido) se leen dentro del modelo simulado, no como efectos causales.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -3858,7 +3858,7 @@ Cómo leer (y cómo no leer) esta tabla
 <section id="píxeles-con-mayor-incertidumbre" class="level2" data-number="5.3">
 <h2 data-number="5.3" class="anchored" data-anchor-id="píxeles-con-mayor-incertidumbre"><span class="header-section-number">5.3</span> Píxeles con mayor incertidumbre</h2>
 <ul>
-<li><strong>Ising:</strong> los píxeles inciertos (<span class="math inline">\(\hat\pi_i\approx\frac12\)</span>) están en el <strong>contorno de la silueta</strong> y en los detalles finos. La incertidumbre depende del contenido de la imagen: un píxel es dudoso cuando sus vecinos no coinciden.</li>
+<li><strong>Ising:</strong> los píxeles inciertos (<span class="math inline">\(\hat\pi_i\approx\frac12\)</span>) están en el <strong>contorno de la silueta</strong> y en los detalles finos. La incertidumbre depende del contenido de la imagen: un píxel es dudoso cuando sus vecinos no coinciden. La clasificación MAP (<span class="math inline">\(\hat\pi_i\ge 0.5\)</span>) no usa esa distancia: los píxeles ambiguos (<span class="math inline">\(\hat\pi_i\in[0.4,0.6]\)</span>) son solo el 0.7–1.4 % del total, pero <strong>concentran el 22–28 % de los errores</strong> del MAP (precisión 54–82 % en ambiguos frente a más del 98 % en el resto). El mapa de <span class="math inline">\(\hat\pi_i\)</span> incorpora la incertidumbre de la asignación que el MAP deja fuera.</li>
 <li><strong>GMRF:</strong> la DE posterior es casi uniforme y aumenta en el <strong>marco de la imagen</strong> (bordes y esquinas, que tienen 3 y 2 vecinos). No depende del contenido: en un modelo gaussiano con parámetros fijos, la varianza posterior <span class="math inline">\((\sigma^{-2}\mathbf{I}+\mathbf{Q})^{-1}\)</span> no depende de <span class="math inline">\(\boldsymbol y\)</span>, solo de la geometría del grafo y de los parámetros.</li>
 <li>En ambos casos la incertidumbre <strong>crece con el ruido</strong>. Pero en los GMRF está <strong>mal calibrada</strong> con poco ruido (cobertura del 49 % en grises y 57–77 % en RGB), porque el modelo subestima la varianza del ruido.</li>
 </ul>
@@ -3870,6 +3870,7 @@ Cómo leer (y cómo no leer) esta tabla
 <li>Los GMRF son más versátiles (intensidades continuas, colores) y computacionalmente más baratos por iteración. Pero su penalización cuadrática difumina bordes y su varianza del ruido se confunde con la textura.</li>
 <li>El modelo RGB añade una ventaja real: aprovechar la correlación entre canales para separar el ruido de color, lo que mejora mucho el caso de ruido bajo frente al gris.</li>
 </ol>
+<p>Estas son comparaciones de <strong>comportamiento</strong>, no un contraste estadístico sobre los mismos datos: cada modelo se aplica a una imagen distinta (binaria, grises, RGB) y no comparten verosimilitud. Las diferencias numéricas se reportan con su magnitud (MSE, SNR, PSNR) y no se califican de despreciables ni de decisivas sin un análisis formal; la “mejora” del Ising, por ejemplo, se sostiene en la eliminación del 88–89 % de los errores, no en una etiqueta.</p>
 </section>
 <section id="ventajas-y-limitaciones-de-los-algoritmos-mcmc" class="level2" data-number="5.5">
 <h2 data-number="5.5" class="anchored" data-anchor-id="ventajas-y-limitaciones-de-los-algoritmos-mcmc"><span class="header-section-number">5.5</span> Ventajas y limitaciones de los algoritmos MCMC</h2>
@@ -3911,7 +3912,15 @@ Cómo leer (y cómo no leer) esta tabla
 </tr>
 </tbody>
 </table>
-<p>Todas las cadenas cumplen el criterio CVMC &lt; 5 %, pero un <span class="math inline">\(n_{\text{eff}}\)</span> de 13 es una señal de alerta: conviene complementar con varias cadenas y Gelman–Rubin.</p>
+<p>Todas las cadenas cumplen el criterio CVMC &lt; 5 %, pero eso confirma la precisión de la media de <em>cada cadena</em>, no la convergencia. La batería de tests sobre las trazas (split-<span class="math inline">\(\widehat R\)</span> por rangos, Heidelberger–Welch, Raftery–Lewis y Geweke; <code>convergencia.R</code>) ordena las alertas por modelo: el GMRF de grises queda <strong>confirmado</strong> (<span class="math inline">\(\widehat R\)</span> 1.00–1.03; solo las colas de <span class="math inline">\(\sigma^2\)</span> con <span class="math inline">\(\sigma_0=0.05\)</span> y de <span class="math inline">\(\lambda\)</span> con <span class="math inline">\(\sigma_0=0.20\)</span> piden más iteraciones para cuantiles finos); en el Ising, <span class="math inline">\(\beta\)</span> queda en <span class="math inline">\(\widehat R\)</span> 1.02–1.05 con Raftery–Lewis por encima de las iteraciones disponibles; y en el RGB, <span class="math inline">\(\boldsymbol\mu\)</span> y <span class="math inline">\(\mathbf{\Sigma}\)</span> quedan confirmados (<span class="math inline">\(\widehat R\le1.06\)</span>) pero <span class="math inline">\(\lambda\)</span> (1.05–1.18) y <span class="math inline">\(\mathbf{\Omega}\)</span> no se estabilizan entre segmentos. El respaldo definitivo —<span class="math inline">\(\widehat R\)</span> multicaso con cadenas independientes— queda declarado como pendiente en los tres modelos.</p>
+<p><strong>Sensibilidad de las previas.</strong> Comprobada en el 3.3 con la misma semilla de ruido y <strong>cinco variantes de previa</strong> (base, débil, informativa, Jeffreys <span class="math inline">\(p(\theta)\propto1/\theta\)</span> e información unitaria para <span class="math inline">\(\sigma^2\)</span>): <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\lambda\)</span> y <span class="math inline">\(\sigma^2\)</span> se mueven menos de un 1 %, <span class="math inline">\(\tau\)</span> cambia un orden de magnitud (es el único parámetro con información débil), y el MSE de restauración varía menos de un 1 %. Los criterios de comparación acompañan: las diferencias de DIC son de a lo más 6 puntos (la previa informativa queda algo peor, porque los datos prefieren <span class="math inline">\(\tau\)</span> pequeño) y las de WAIC, leves al pesarlas por observación. Ninguna conclusión cambia con la previa; el valor numérico de <span class="math inline">\(\tau\)</span> sí es interpretable solo con cautela.</p>
+<p><strong>Verificación bayesiana del ajuste.</strong> Además de los tests de convergencia, se añadieron los chequeos estándar del curso (<code>verificaciones.R</code>):</p>
+<ul>
+<li><strong>Log-verosimilitud marginal y DIC</strong> (GMRF): trazas estables sin deriva y <span class="math inline">\(p_D\)</span> de 2.3–13.8 (de 4 y 16 escalares): los datos dominan las previas.</li>
+<li><strong>Probabilidades de contrastes:</strong> <span class="math inline">\(\Pr(\sigma^2&lt;\sigma_0^2\mid y)=1\)</span> y <span class="math inline">\(\Pr(\Sigma_{cc}&lt;\sigma_0^2\mid y)=1\)</span> en todos los escenarios — las subestimaciones del ruido son <strong>seguras a posteriori</strong>, no artefactos puntuales; <span class="math inline">\(\Pr(\beta&gt;\beta_c\mid y)=1\)</span> (fase de regiones homogéneas) y <span class="math inline">\(\Pr(\rho&lt;\rho_0\mid y)=1\)</span> (volteos absorbidos por el campo).</li>
+<li><strong>Chequeo predictivo previo:</strong> las previas cubren las escalas observadas (salvo una tensión leve en la DE del 3.3, señalada en su documento).</li>
+<li><strong>Chequeo predictivo posterior (ppp):</strong> las réplicas del modelo reproducen la <strong>media</strong> de los datos (ppp 0.4–0.6) pero <strong>nunca</strong> su DE (ppp = 1.00) ni su contraste local con poco ruido (ppp = 0.00): los chequeos detectan sin verdad de referencia lo mismo que las limitaciones declaraban — el suavizado cuadrático no cubre el rango dinámico ni el mixto de regiones planas y bordes de las imágenes reales.</li>
+</ul>
 <p><strong>Costo y resolución mayor.</strong></p>
 <ul>
 <li>Cada barrido de Gibbs cuesta <span class="math inline">\(O(P)\)</span>, gracias a las matrices dispersas y al tablero. Pero el <strong>número de barridos necesario crece con el tamaño</strong>: la información se propaga un píxel por barrido, así que en una imagen de <span class="math inline">\(1024\times1024\)</span> la mezcla sería mucho más lenta.</li>
@@ -3937,13 +3946,12 @@ Cómo leer (y cómo no leer) esta tabla
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Los archivos <code>.rds</code> y <code>.csv</code> de 3.3 y 3.4 fueron sobrescritos
+Reproducibilidad: la corrida rápida que sobrescribió <code>Code/resultados/</code> (resuelta)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Al preparar estos documentos se encontró que <code>Code/resultados/3.3/3.3_resultados.rds</code>, <code>3.3_resumen.csv</code>, <code>Code/resultados/3.4/3.4_resultados.rds</code> y <code>3.4_resumen.csv</code> contienen una <strong>corrida rápida</strong> (<code>CDE_RAPIDO=TRUE</code>: 400 iteraciones, un solo nivel de ruido), no la corrida final de 24,000 iteraciones. Lo mismo pasa con varias figuras (por ejemplo, <code>diag_lambda_0.10.png</code> del 3.4 tiene 200 iteraciones, <code>comparacion_grises.png</code> tiene una sola fila y <code>panel_grises_0.05.png</code> está vacío).</p>
-<p>Los logs <code>log_3.3.txt</code> y <code>log_3.4.txt</code> y <code>tabla_global.tex</code> sí corresponden a la corrida final. Si se vuelve a ejecutar <code>4.R</code> sin arreglar esto, la tabla global saldrá con los números de la corrida rápida.</p>
-<p>Las corridas finales se repitieron con las mismas semillas y <code>CDE_LOGDET=espectral</code> en <code>Explicacion_GMRF_grises/corrida/</code> y <code>Explicacion_GMRF_RGB/corrida/</code>, sin tocar <code>Code/resultados/</code>. Los logs nuevos reproducen los originales número por número, y las figuras de los documentos del 3.3 y 3.4 salen de ahí. Para restaurar <code>Code/resultados/</code>, basta copiar los <code>.rds</code>, <code>.csv</code> y <code>.png</code> de esas carpetas (subcarpetas <code>3.3/</code> y <code>3.4/</code>).</p>
+<p>Al preparar estos documentos se encontró que <code>Code/resultados/3.3/3.3_resultados.rds</code>, <code>3.3_resumen.csv</code>, <code>Code/resultados/3.4/3.4_resultados.rds</code> y <code>3.4_resumen.csv</code> habían quedado como una <strong>corrida rápida</strong> (<code>CDE_RAPIDO=TRUE</code>: 400 iteraciones, un solo nivel de ruido), no como la corrida final de 24,000 iteraciones; varias figuras también eran de esa corrida rápida. Los logs <code>log_3.3.txt</code> y <code>log_3.4.txt</code> y <code>tabla_global.tex</code> sí correspondían a la corrida final.</p>
+<p>El problema quedó <strong>resuelto</strong>: el 3.3 se restauró copiando la corrida final de <code>corrida/3.3/</code> (idéntica byte a byte), y el 3.4 se <strong>re-corrió con las mismas semillas</strong> y <code>CDE_LOGDET=espectral</code> (noviembre de 2026), reproduciendo los números documentados exactamente (ver <code>log_3.4_recuperado.txt</code>). Ahora <code>Code/resultados/</code> vuelve a contener las corridas finales de 3.2, 3.3 y 3.4, con las <strong>trazas completas</strong> de los parámetros escalares que usa <code>convergencia.R</code>, y <code>corrida/</code> guarda las copias de referencia (<code>.rds</code>, <code>.csv</code> y figuras de los tres niveles de ruido).</p>
 </div>
 </div>
 </section>

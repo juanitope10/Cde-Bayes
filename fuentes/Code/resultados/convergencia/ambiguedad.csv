@@ -1,0 +1,10 @@
+"modelo","escenario","nivel_ruido","criterio","pct_ambiguos","pct_errores_en_ambiguos","precision_ambiguos","precision_no_ambiguos"
+"Ising","rho_0.10",0.1,"pi_i en [0.4, 0.6]",0.714111328125,26.865671641791,53.8461538461538,99.0963299932378
+"Ising","rho_0.05",0.05,"pi_i en [0.4, 0.6]",0.69580078125,22.3404255319149,81.5789473684211,99.5513214505224
+"Ising","rho_0.20",0.2,"pi_i en [0.4, 0.6]",1.434326171875,27.9005524861878,57.0212765957447,98.3838008545421
+"GMRF grises","sigma0_0.10",0.1,"DE posterior (homogeneidad p90/mediana = 1.007): mediana 0.0573 | max 0.0640",NA,NA,NA,NA
+"GMRF grises","sigma0_0.05",0.05,"DE posterior (homogeneidad p90/mediana = 1.007): mediana 0.0161 | max 0.0164",NA,NA,NA,NA
+"GMRF grises","sigma0_0.20",0.2,"DE posterior (homogeneidad p90/mediana = 1.008): mediana 0.0948 | max 0.1222",NA,NA,NA,NA
+"GMRF RGB","sigma0_0.10",0.1,"DE posterior (homogeneidad p90/mediana = 1.006): mediana 0.0354 | max 0.0443",NA,NA,NA,NA
+"GMRF RGB","sigma0_0.05",0.05,"DE posterior (homogeneidad p90/mediana = 1.006): mediana 0.0187 | max 0.0217",NA,NA,NA,NA
+"GMRF RGB","sigma0_0.20",0.2,"DE posterior (homogeneidad p90/mediana = 1.007): mediana 0.0657 | max 0.0818",NA,NA,NA,NA

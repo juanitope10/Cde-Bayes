@@ -31,7 +31,7 @@ dir_raiz <- "C:/Users/usuario/Desktop/cde bayescompleto" # Windows
 ```
 
 Cada script deja sus salidas en su propia subcarpeta de `fuentes/Code/resultados/`:
-`3.2/`, `3.3/`, `3.4/` y `4/`.
+`3.2/`, `3.3/`, `3.4/`, `convergencia/`, `verificacion/`, `sensibilidad/` y `4/`.
 
 ## Cómo ejecutar
 
@@ -42,6 +42,9 @@ Rscript 3.1.R   # exploración, grafo y verificaciones (~10 s)
 Rscript 3.2.R   # modelo de Ising, 3 niveles de ruido (~30 min)
 Rscript 3.3.R   # GMRF en escala de grises (~25 min con CDE_LOGDET=espectral)
 Rscript 3.4.R   # GMRF RGB (~60 min con CDE_LOGDET=espectral)
+Rscript convergencia.R   # tests de convergencia de las trazas guardadas (~2 min)
+Rscript verificaciones.R # log-verosimilitud/DIC, predictivas y contrastes (~30 min)
+Rscript sensibilidad.R   # 5 variantes de previa con DIC/WAIC (~40 min con espectral)
 Rscript 4.R     # tabla comparativa global + LaTeX + discusión
 ```
 

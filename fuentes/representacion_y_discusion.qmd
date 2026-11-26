@@ -305,7 +305,13 @@ hallazgos (`discusion.txt`).
 
 La dependencia espacial es lo que hace posible la restauración: sin ella
 ($\beta=0$ o $\lambda=0$), cada píxel solo tendría su propia observación y la
-mejor estimación sería la imagen contaminada.
+mejor estimación sería la imagen contaminada. Conviene precisar qué significa
+aquí "dependencia espacial": es una **suposición de regularización de la
+previa** (suavidad en los GMRF, segmentación en el Ising), no un hallazgo
+empírico de procesos espaciales en los datos. Los parámetros $\beta$,
+$\lambda$ y $\mathbf{\Omega}$ describen esa regularización; las asociaciones
+que se reportan (por ejemplo, cómo cambia $\hat\beta$ con el ruido) se leen
+dentro del modelo simulado, no como efectos causales.
 
 | Aspecto | Ising | GMRF (grises y RGB) |
 |:--|:--|:--|
@@ -324,6 +330,11 @@ $\sigma^2\lambda$, que **sube** de 0.013 a 0.905: con más ruido, más suavizado
 - **Ising:** los píxeles inciertos ($\hat\pi_i\approx\frac12$) están en el
   **contorno de la silueta** y en los detalles finos. La incertidumbre depende del
   contenido de la imagen: un píxel es dudoso cuando sus vecinos no coinciden.
+  La clasificación MAP ($\hat\pi_i\ge 0.5$) no usa esa distancia: los píxeles
+  ambiguos ($\hat\pi_i\in[0.4,0.6]$) son solo el 0.7–1.4 % del total, pero
+  **concentran el 22–28 % de los errores** del MAP (precisión 54–82 % en
+  ambiguos frente a más del 98 % en el resto). El mapa de $\hat\pi_i$ incorpora
+  la incertidumbre de la asignación que el MAP deja fuera.
 - **GMRF:** la DE posterior es casi uniforme y aumenta en el **marco de la imagen**
   (bordes y esquinas, que tienen 3 y 2 vecinos). No depende del contenido: en un
   modelo gaussiano con parámetros fijos, la varianza posterior
@@ -343,6 +354,13 @@ $\sigma^2\lambda$, que **sube** de 0.013 a 0.905: con más ruido, más suavizado
 3. El modelo RGB añade una ventaja real: aprovechar la correlación entre canales
    para separar el ruido de color, lo que mejora mucho el caso de ruido bajo frente al gris.
 
+Estas son comparaciones de **comportamiento**, no un contraste estadístico
+sobre los mismos datos: cada modelo se aplica a una imagen distinta (binaria,
+grises, RGB) y no comparten verosimilitud. Las diferencias numéricas se
+reportan con su magnitud (MSE, SNR, PSNR) y no se califican de despreciables
+ni de decisivas sin un análisis formal; la "mejora" del Ising, por ejemplo, se
+sostiene en la eliminación del 88–89 % de los errores, no en una etiqueta.
+
 ## Ventajas y limitaciones de los algoritmos MCMC
 
 **Ventajas.** Inferencia completa: medias, DE, intervalos por píxel y mapas de
@@ -360,8 +378,49 @@ tablero de ajedrez permite vectorizar.
 | Grises | $\lambda$, $\sigma^2$ | 77–1,447 de 22,000 | dependen de la imagen completa, que cambia lento |
 | RGB | $\lambda$ | 13–26 de 22,000 | cresta $(\lambda,\mathbf{\Omega})$: solo el producto está bien identificado |
 
-Todas las cadenas cumplen el criterio CVMC < 5 %, pero un $n_{\text{eff}}$ de 13
-es una señal de alerta: conviene complementar con varias cadenas y Gelman–Rubin.
+Todas las cadenas cumplen el criterio CVMC < 5 %, pero eso confirma la
+precisión de la media de *cada cadena*, no la convergencia. La batería de
+tests sobre las trazas (split-$\widehat R$ por rangos, Heidelberger–Welch,
+Raftery–Lewis y Geweke; `convergencia.R`) ordena las alertas por modelo: el
+GMRF de grises queda **confirmado** ($\widehat R$ 1.00–1.03; solo las colas de
+$\sigma^2$ con $\sigma_0=0.05$ y de $\lambda$ con $\sigma_0=0.20$ piden más
+iteraciones para cuantiles finos); en el Ising, $\beta$ queda en
+$\widehat R$ 1.02–1.05 con Raftery–Lewis por encima de las iteraciones
+disponibles; y en el RGB, $\boldsymbol\mu$ y $\mathbf{\Sigma}$ quedan
+confirmados ($\widehat R\le1.06$) pero $\lambda$ (1.05–1.18) y
+$\mathbf{\Omega}$ no se estabilizan entre segmentos. El respaldo definitivo
+—$\widehat R$ multicaso con cadenas independientes— queda declarado como
+pendiente en los tres modelos.
+
+**Sensibilidad de las previas.** Comprobada en el 3.3 con la misma semilla de
+ruido y **cinco variantes de previa** (base, débil, informativa, Jeffreys
+$p(\theta)\propto1/\theta$ e información unitaria para $\sigma^2$):
+$\mu$, $\lambda$ y $\sigma^2$ se mueven menos de un 1 %, $\tau$ cambia un
+orden de magnitud (es el único parámetro con información débil), y el MSE de
+restauración varía menos de un 1 %. Los criterios de comparación acompañan:
+las diferencias de DIC son de a lo más 6 puntos (la previa informativa queda
+algo peor, porque los datos prefieren $\tau$ pequeño) y las de WAIC, leves al
+pesarlas por observación. Ninguna conclusión cambia con la previa; el valor
+numérico de $\tau$ sí es interpretable solo con cautela.
+
+**Verificación bayesiana del ajuste.** Además de los tests de convergencia,
+se añadieron los chequeos estándar del curso (`verificaciones.R`):
+
+- **Log-verosimilitud marginal y DIC** (GMRF): trazas estables sin deriva y
+  $p_D$ de 2.3–13.8 (de 4 y 16 escalares): los datos dominan las previas.
+- **Probabilidades de contrastes:** $\Pr(\sigma^2<\sigma_0^2\mid y)=1$ y
+  $\Pr(\Sigma_{cc}<\sigma_0^2\mid y)=1$ en todos los escenarios — las
+  subestimaciones del ruido son **seguras a posteriori**, no artefactos
+  puntuales; $\Pr(\beta>\beta_c\mid y)=1$ (fase de regiones homogéneas) y
+  $\Pr(\rho<\rho_0\mid y)=1$ (volteos absorbidos por el campo).
+- **Chequeo predictivo previo:** las previas cubren las escalas observadas
+  (salvo una tensión leve en la DE del 3.3, señalada en su documento).
+- **Chequeo predictivo posterior (ppp):** las réplicas del modelo reproducen
+  la **media** de los datos (ppp 0.4–0.6) pero **nunca** su DE (ppp = 1.00) ni
+  su contraste local con poco ruido (ppp = 0.00): los chequeos detectan sin
+  verdad de referencia lo mismo que las limitaciones declaraban — el
+  suavizado cuadrático no cubre el rango dinámico ni el mixto de regiones
+  planas y bordes de las imágenes reales.
 
 **Costo y resolución mayor.**
 
@@ -402,21 +461,20 @@ enfoque bayesiano completo frente a un método que solo entrega una imagen.
 # Nota de reproducibilidad
 
 ::: {.callout-important}
-## Los archivos `.rds` y `.csv` de 3.3 y 3.4 fueron sobrescritos
+## Reproducibilidad: la corrida rápida que sobrescribió `Code/resultados/` (resuelta)
 Al preparar estos documentos se encontró que `Code/resultados/3.3/3.3_resultados.rds`,
 `3.3_resumen.csv`, `Code/resultados/3.4/3.4_resultados.rds` y `3.4_resumen.csv`
-contienen una **corrida rápida** (`CDE_RAPIDO=TRUE`: 400 iteraciones, un solo nivel
-de ruido), no la corrida final de 24,000 iteraciones. Lo mismo pasa con varias
-figuras (por ejemplo, `diag_lambda_0.10.png` del 3.4 tiene 200 iteraciones,
-`comparacion_grises.png` tiene una sola fila y `panel_grises_0.05.png` está vacío).
+habían quedado como una **corrida rápida** (`CDE_RAPIDO=TRUE`: 400 iteraciones, un
+solo nivel de ruido), no como la corrida final de 24,000 iteraciones; varias
+figuras también eran de esa corrida rápida. Los logs `log_3.3.txt` y
+`log_3.4.txt` y `tabla_global.tex` sí correspondían a la corrida final.
 
-Los logs `log_3.3.txt` y `log_3.4.txt` y `tabla_global.tex` sí corresponden a la
-corrida final. Si se vuelve a ejecutar `4.R` sin arreglar esto, la tabla global
-saldrá con los números de la corrida rápida.
-
-Las corridas finales se repitieron con las mismas semillas y
-`CDE_LOGDET=espectral` en `corrida/`, sin tocar `Code/resultados/`. Los logs nuevos
-reproducen los originales número por número, y las figuras de los documentos del
-3.3 y 3.4 salen de ahí. Para restaurar `Code/resultados/`, basta copiar los
-`.rds`, `.csv` y `.png` de esa carpeta (subcarpetas `3.3/` y `3.4/`).
+El problema quedó **resuelto**: el 3.3 se restauró copiando la corrida final de
+`corrida/3.3/` (idéntica byte a byte), y el 3.4 se **re-corrió con las mismas
+semillas** y `CDE_LOGDET=espectral` (noviembre de 2026), reproduciendo los
+números documentados exactamente (ver `log_3.4_recuperado.txt`). Ahora
+`Code/resultados/` vuelve a contener las corridas finales de 3.2, 3.3 y 3.4,
+con las **trazas completas** de los parámetros escalares que usa
+`convergencia.R`, y `corrida/` guarda las copias de referencia (`.rds`,
+`.csv` y figuras de los tres niveles de ruido).
 :::

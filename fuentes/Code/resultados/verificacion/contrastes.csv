@@ -1,0 +1,28 @@
+"modelo","escenario","contraste","prob"
+"Ising","rho_0.10","P(beta > beta_c | y)",1
+"Ising","rho_0.10","P(rho < rho0 | y)",1
+"Ising","rho_0.05","P(beta > beta_c | y)",1
+"Ising","rho_0.05","P(rho < rho0 | y)",1
+"Ising","rho_0.20","P(beta > beta_c | y)",1
+"Ising","rho_0.20","P(rho < rho0 | y)",1
+"GMRF grises","sigma0_0.10","P(sigma2 < 0.0100 | y)",1
+"GMRF grises","sigma0_0.10","P(tau < 0.01 | y)",0.985409090909091
+"GMRF grises","sigma0_0.10","P(lambda > 20 | y)",1
+"GMRF grises","sigma0_0.05","P(sigma2 < 0.0025 | y)",1
+"GMRF grises","sigma0_0.05","P(tau < 0.01 | y)",0.992727272727273
+"GMRF grises","sigma0_0.05","P(lambda > 20 | y)",1
+"GMRF grises","sigma0_0.20","P(sigma2 < 0.0400 | y)",1
+"GMRF grises","sigma0_0.20","P(tau < 0.01 | y)",0.978818181818182
+"GMRF grises","sigma0_0.20","P(lambda > 20 | y)",1
+"GMRF RGB","sigma0_0.10","P(Sigma_11 < 0.0100 | y)",1
+"GMRF RGB","sigma0_0.10","P(Sigma_22 < 0.0100 | y)",1
+"GMRF RGB","sigma0_0.10","P(Sigma_33 < 0.0100 | y)",1
+"GMRF RGB","sigma0_0.10","P(lambda > 400 | y)",1
+"GMRF RGB","sigma0_0.05","P(Sigma_11 < 0.0025 | y)",1
+"GMRF RGB","sigma0_0.05","P(Sigma_22 < 0.0025 | y)",1
+"GMRF RGB","sigma0_0.05","P(Sigma_33 < 0.0025 | y)",1
+"GMRF RGB","sigma0_0.05","P(lambda > 400 | y)",1
+"GMRF RGB","sigma0_0.20","P(Sigma_11 < 0.0400 | y)",1
+"GMRF RGB","sigma0_0.20","P(Sigma_22 < 0.0400 | y)",1
+"GMRF RGB","sigma0_0.20","P(Sigma_33 < 0.0400 | y)",1
+"GMRF RGB","sigma0_0.20","P(lambda > 400 | y)",0.0447727272727273

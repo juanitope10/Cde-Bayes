@@ -253,6 +253,12 @@ ejecutar_mcmc <- function(y, cfg, semilla, verbose = TRUE) {
   sx <- numeric(P); sx2 <- numeric(P); n_post <- 0
   i_th <- 0
 
+  # Acumuladores opcionales para WAIC (verosimilitud condicional punto a punto:
+  # p(y_i | x_i, s2); solo con cfg$waic = TRUE; no consumen aleatoriedad)
+  if (isTRUE(cfg$waic)) {
+    waic_s1 <- numeric(P); waic_s2 <- numeric(P); waic_s3 <- numeric(P)
+  }
+
   # log|Q| del estado actual (se actualiza al aceptar propuestas)
   logdet <- log_det_Q(tau, lambda)
   t0 <- Sys.time()
@@ -275,6 +281,11 @@ ejecutar_mcmc <- function(y, cfg, semilla, verbose = TRUE) {
 
     if (b > cfg$burn) {
       sx <- sx + x; sx2 <- sx2 + x^2; n_post <- n_post + 1
+      if (isTRUE(cfg$waic)) {
+        pv <- dnorm(y, x, sqrt(sig2))
+        lpv <- log(pmax(pv, 1e-300))
+        waic_s1 <- waic_s1 + pv; waic_s2 <- waic_s2 + lpv; waic_s3 <- waic_s3 + lpv^2
+      }
       if ((b - cfg$burn) %% cfg$thin == 0 && i_th < n_th) {
         i_th <- i_th + 1; X_th[i_th, ] <- x
       }
@@ -305,11 +316,15 @@ ejecutar_mcmc <- function(y, cfg, semilla, verbose = TRUE) {
   }
 
   post <- (cfg$burn + 1):B
-  list(mu = MU, tau = TAU, lambda = LAM, sig2 = S2,
+  salida <- list(mu = MU, tau = TAU, lambda = LAM, sig2 = S2,
        acc_par = ACC_PAR,
        x_media = sx / n_post, x2_media = sx2 / n_post,
        X_th = X_th, post = post, s_escala = s,
        tiempo = as.numeric(difftime(Sys.time(), t0, units = "secs")))
+  if (isTRUE(cfg$waic)) {
+    salida$waic <- list(s1 = waic_s1, s2 = waic_s2, s3 = waic_s3, n = n_post)
+  }
+  salida
 }
 
 # ------------------------------------------------------------------------------
@@ -442,7 +457,9 @@ correr_escenario <- function(x0, sigma0, cfg, semilla) {
 
 # ------------------------------------------------------------------------------
 # 8. EJECUCIÓN: tres niveles de ruido
+#    (con CDE_SOLO_FUNCIONES=1 se cargan las funciones sin ejecutar la corrida)
 # ------------------------------------------------------------------------------
+if (!identical(Sys.getenv("CDE_SOLO_FUNCIONES"), "1")) {
 resultados <- list()
 for (k in seq_along(config$sigma0_levels)) {
   s0 <- config$sigma0_levels[k]
@@ -496,3 +513,4 @@ resultados_ligero <- lapply(resultados, function(r) {
 saveRDS(list(resumen = resumen, resultados = resultados_ligero),
         file.path(dir_out, "3.3_resultados.rds"))
 cat("\nResultados guardados en:", dir_out, "\n")
+}

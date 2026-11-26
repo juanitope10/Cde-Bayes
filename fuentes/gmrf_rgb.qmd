@@ -146,6 +146,16 @@ Los valores propios de $\mathbf{Q}$ son $(1+\lambda w_k)\,\omega_l$, positivos s
 solo si todos los $\omega_l$ (valores propios de $\mathbf{\Omega}$) lo son.
 :::
 
+**Nota sobre el rango y la propiedad de la previa.** Como en el 3.3, la
+Laplaciana tiene rango $P-1$: su único vector nulo es $\boldsymbol 1$
+($\mathbf{L}\boldsymbol 1=\boldsymbol 0$). Pero aquí el factor espacial es
+$\mathbf{I}_P+\lambda\mathbf{L}$, definida positiva para todo $\lambda>0$
+(valores propios $1+\lambda w_k\ge 1$), de modo que la previa de
+$\boldsymbol{x}$ es **propia** sin restricciones adicionales: no existe el
+caso intrínseco del 3.3. El cero $w_1=0$ sigue presente en la fórmula espectral
+$\log|\mathbf{I}+\lambda\mathbf{L}|=\sum_k\log(1+\lambda w_k)$, donde aporta
+$\log 1=0$, y por eso el determinante no exige invertir $\mathbf{Q}$.
+
 **Interpretación.** La covarianza es
 $\mathbf{Q}^{-1}=(\mathbf{I}+\lambda\mathbf{L})^{-1}\otimes\mathbf{\Omega}^{-1}$, es decir,
 
@@ -594,7 +604,10 @@ $\lambda\mathbf{\Omega}$ los determinan los datos. La posición a lo largo de la
 cresta (cuánto es $\lambda$ y cuánto $\mathbf{\Omega}$) sí depende de las previas
 de $\lambda$ y $\mathbf{\Omega}$ (sección 4.2). Afecta poco a la restauración,
 pero significa que los valores numéricos de $\lambda$ y $\mathbf{\Omega}$ por
-separado deben interpretarse con cuidado.
+separado deben interpretarse con cuidado. La comprobación cuantitativa de este
+patrón (previas débiles e informativas con las mismas medias) se hizo en el
+3.3 (tabla de sensibilidad del documento de grises) por ser el modelo más
+barato: las conclusiones son análogas.
 
 # Estimación posterior y restauración
 
@@ -659,6 +672,161 @@ Para el informe conviene decir que el CVMC cumple, pero que $\lambda$ mezcla muy
 lento por la cresta $(\lambda,\mathbf{\Omega})$. Lo que se usa para restaurar (la
 media posterior de cada píxel) sí está bien estimado: los $n_{\text{eff}}$ de los
 píxeles son 125–550 y su CVMC medio es menor que 1.7 %.
+
+## Tests de convergencia sobre las trazas
+
+Batería completa sobre las trazas post-calentamiento (`convergencia.R`,
+`convergencia_3.4.csv`), resumida por bloque de parámetros (máximos de
+$\widehat R$ y mínimos de ESS dentro de cada bloque). Qué evalúa cada test
+(desarrollo completo en el documento del 3.2):
+
+- **Split-$\widehat R$ (clásico y por rangos, Vehtari et al. 2021):** la
+  cadena se divide en 4 segmentos tratados como cadenas independientes y se
+  compara la varianza entre segmentos con la interna ($\widehat R\approx1$ =
+  sin deriva; umbral $<1.01$); la versión por rangos es robusta a colas. Se
+  reporta además el IC superior 97.5 %. Con una sola cadena detecta deriva
+  dentro de ella, no sustituye al multicaso.
+- **ESS *bulk* / *tail*:** precisión de la media y de las colas 5 %/95 %.
+- **Heidelberger–Welch:** estacionariedad (Cramér–von Mises, $p>0.05$) y
+  semi-amplitud (error de MC $<10$ % de la DE).
+- **Raftery–Lewis:** iteraciones necesarias para el cuantil 2.5 % con
+  precisión $\pm0.0125$ y probabilidad 0.95 (infladas por la autocorrelación).
+- **Geweke $z$** ($|z|>1.96$ = deriva) y **ACF numérica** (retardos 1–50).
+
+Tabla:
+
+| $\sigma_0$ | Parámetro | $\widehat R$ rangos (máx) | $\widehat R$ sup (máx) | ESS bulk (mín) | ESS tail (mín) | Geweke fuera | HW fuera | Raftery $N$ (cumplidos) |
+|--:|:--|--:|--:|--:|--:|--:|--:|:--|
+| 0.05 | $\boldsymbol\mu$ (3 canales) | 1.00 | 1.00 | 21,938 | 21,276 | 0 | 0 | 604 (3/3) |
+| 0.05 | $\lambda$ | 1.09 | 1.15 | 26 | 45 | 0 | 0 | 45,572 (0/1) |
+| 0.05 | $\mathbf{\Sigma}$ (6 entradas) | 1.06 | 1.21 | 84 | 187 | 0 | 0 | 30,277 (4/6) |
+| 0.05 | $\mathbf{\Omega}$ (6 entradas) | 1.06 | 1.14 | 52 | 84 | 0 | 0 | 30,814 (3/6) |
+| 0.10 | $\boldsymbol\mu$ (3 canales) | 1.00 | 1.00 | 22,000 | 20,132 | 2 | 0 | 604 (3/3) |
+| 0.10 | $\lambda$ | 1.05 | 1.07 | 21 | 101 | 0 | 0 | 20,323 (1/1) |
+| 0.10 | $\mathbf{\Sigma}$ (6 entradas) | 1.02 | 1.09 | 123 | 335 | 0 | 1 | 19,824 (6/6) |
+| 0.10 | $\mathbf{\Omega}$ (6 entradas) | 1.03 | 1.07 | 53 | 151 | 1 | 0 | 23,792 (4/6) |
+| 0.20 | $\boldsymbol\mu$ (3 canales) | 1.00 | 1.00 | 21,609 | 21,537 | 0 | 0 | 614 (3/3) |
+| 0.20 | $\lambda$ | 1.18 | 2.08 | 14 | 45 | 0 | 0 | 52,346 (0/1) |
+| 0.20 | $\mathbf{\Sigma}$ (6 entradas) | 1.02 | 1.07 | 94 | 323 | 2 | 0 | 11,376 (6/6) |
+| 0.20 | $\mathbf{\Omega}$ (6 entradas) | 1.09 | 1.41 | 58 | 98 | 1 | 0 | 49,343 (1/6) |
+
+: Tests de convergencia por bloque de parámetros (22,000 muestras tras el calentamiento). "Geweke fuera" y "HW fuera" cuentan los parámetros del bloque con $|z|>1.96$ o con test de estacionariedad rechazado; "Raftery $N$" es el máximo de iteraciones pedidas dentro del bloque, con los parámetros que lo cumplen. {#tbl-conv}
+
+![Trazas por segmentos y ACF de $\lambda$, $\mu_R$, $\Sigma_{11}$ y $\Omega_{11}$ con $\sigma_0=0.10$.](Code/resultados/convergencia/convergencia_3.4_0.10.png){#fig-conv}
+
+**Lectura.** $\boldsymbol\mu$ está perfectamente estabilizado
+($\widehat R=1.00$, ESS *bulk* 22,000) y $\mathbf{\Sigma}$ queda en
+1.01–1.06. La alerta cuantitativa está donde la lectura anterior la situaba:
+$\lambda$ supera el umbral $\widehat R<1.01$ en los tres escenarios
+(1.05–1.18, con IC superior hasta 2.08 con $\sigma_0=0.20$) y Raftery–Lewis le
+pide entre 20,000 y 52,000 iteraciones para su cuantil 2.5 %; las entradas de
+$\mathbf{\Omega}$ heredan parte de esa lentitud ($\widehat R$ hasta 1.09,
+Raftery incumplido en varias entradas). El único rechazo de estacionariedad de
+Heidelberger–Welch es $\Sigma_{31}$ con $\sigma_0=0.05$ ($p=0.015$) y los $z$
+de Geweke fuera de $\pm1.96$ son 6 de 48, casi todos en el límite ($|z|\le2.7$).
+En conjunto, los tests **confirman las medias e intervalos de
+$\boldsymbol{\mu}$ y $\mathbf{\Sigma}$ y ratifican la alerta sobre
+$\lambda$** (y, en menor grado, $\mathbf{\Omega}$): con una sola cadena no se
+puede dar por cerrada la convergencia de esos parámetros, y el $\widehat R$
+multicaso con cadenas independientes sigue siendo la validación definitiva.
+
+## Log-verosimilitud marginal y DIC
+
+La verosimilitud marginal de los datos es
+$\boldsymbol y\mid\theta\sim\textsf{N}_{3P}(\boldsymbol 1\otimes\boldsymbol\mu,\
+\mathbf I\otimes\mathbf\Sigma+(\mathbf I+\lambda\mathbf L)^{-1}\otimes\mathbf\Omega^{-1})$,
+y por la estructura separable se evalúa en $O(P)$: la transformada coseno de
+cada canal reduce el problema a modos independientes con bloques
+$\mathbf B_k=\mathbf\Sigma+c_k\mathbf\Omega^{-1}$ ($3\times3$,
+$c_k=(1+\lambda w_k)^{-1}$); los $\log|\mathbf B_k|$ y las formas cuadráticas
+se vectorizan con la descomposición de
+$\mathbf\Omega^{1/2}\mathbf\Sigma\mathbf\Omega^{1/2}$ (validada contra la
+densa `mvtnorm` en rejilla pequeña, error $<10^{-8}$; `verificaciones.R`):
+
+| $\sigma_0$ | $\log p(\boldsymbol y\mid\theta)$ media | $p_D$ | DIC |
+|--:|--:|--:|--:|
+| 0.05 | 52,541.8 | 12.2 | −105,071.4 |
+| 0.10 | 30,453.6 | 12.6 | −60,894.6 |
+| 0.20 | 3,474.8 | 13.8 | −6,935.8 |
+
+: Log-verosimilitud marginal media y DIC por escenario (16 escalares). {#tbl-dic}
+
+![Traza de la log-verosimilitud marginal con $\sigma_0=0.10$.](Code/resultados/verificacion/ll_traza_3.4_0.10.png){#fig-ll}
+
+**Lectura.** $p_D=12$–$14$ de 16 escalares: los datos dominan, aunque menos
+que en el modelo de grises (aquí hay más parámetros y la cresta
+$(\lambda,\mathbf{\Omega})$ deja cierta dependencia de las previas —el
+mismo fenómeno que muestra la sensibilidad de previas del 3.3—). La traza
+(@fig-ll) es estable. Los DIC entre escenarios no se comparan (realizaciones
+de ruido distintas); se usan para comparar variantes del modelo sobre los
+mismos datos.
+
+## Probabilidades posteriores de contrastes
+
+| $\sigma_0$ | $\Pr(\Sigma_{11}<\sigma_0^2\mid y)$ | $\Pr(\Sigma_{22}<\sigma_0^2\mid y)$ | $\Pr(\Sigma_{33}<\sigma_0^2\mid y)$ | $\Pr(\lambda>400\mid y)$ |
+|--:|--:|--:|--:|--:|
+| 0.05 | 1.000 | 1.000 | 1.000 | 1.000 |
+| 0.10 | 1.000 | 1.000 | 1.000 | 1.000 |
+| 0.20 | 1.000 | 1.000 | 1.000 | 0.045 |
+
+: Probabilidades posteriores de los contrastes más relevantes (`contrastes.csv`). {#tbl-contr}
+
+**Lectura.** $\Pr(\Sigma_{cc}<\sigma_0^2\mid y)=1$ en los tres escenarios y
+canales: la subestimación de la varianza del ruido (la dirección de brillo
+absorbida por el campo, sección siguiente) es **segura a posteriori**, no un
+artefacto puntual. $\Pr(\lambda>400\mid y)$ pasa de 1.000 (ruido bajo y
+medio, $\hat\lambda\approx500$–$580$) a 0.045 con ruido alto
+($\hat\lambda\approx336$): el suavizado se afloja cuando hay más ruido, de
+forma coherente en lenguaje probabilístico.
+
+## Chequeos predictivos: previo y posterior
+
+Misma metodología que en el 3.3 (`verificaciones.R`): imágenes completas
+simuladas con el muestreador GMRF exacto (aquí
+$\mathbf Q=(\mathbf I+\lambda\mathbf L)\otimes\mathbf\Omega$, factorización
+de Kronecker con Cholesky disperso espacial y raíz de $\mathbf\Omega$ en el
+espacio de canales), con $\boldsymbol y^*_i=\boldsymbol x^*_i+\boldsymbol\epsilon_i$,
+$\boldsymbol\epsilon_i\sim\textsf{N}_3(\boldsymbol 0,\mathbf\Sigma)$.
+
+**Chequeo predictivo previo** (30 simulaciones con los hiperparámetros de las
+previas de @tbl-hiper):
+
+| Estadístico | Rango de las 30 imágenes previas | Observado (3 escenarios) | ¿Cubierto? |
+|:--|:--|:--|:--|
+| media | [0.08, 1.14] | 0.449–0.451 | sí |
+| DE | [0.09, 0.65] | 0.288–0.308 | sí |
+| contraste entre vecinos | [0.08, 0.59] | 0.074–0.152 | sí (en el borde bajo) |
+
+: Chequeo predictivo previo (`prior_predictivo.csv`). {#tbl-pprev}
+
+**Lectura.** Las previas del RGB cubren las escalas observadas en los tres
+estadísticos — más holgadas que las del 3.3 (la Inversa-Wishart de
+$\mathbf\Sigma$ añade variabilidad). Sin sorpresas indeseables: las medias
+simuladas cubren $[0,1]$ y el contraste típico es el esperable.
+
+**Chequeo predictivo posterior (ppp)** (30 réplicas por escenario,
+$\theta^{(t)}$ de la cadena; `ppp.csv`, figuras `ppp_3.4_*.png`):
+
+| $\sigma_0$ | ppp (media) | ppp (DE) | ppp (contraste) |
+|--:|--:|--:|--:|
+| 0.05 | 0.53 | 1.00 | 0.00 |
+| 0.10 | 0.60 | 1.00 | 0.00 |
+| 0.20 | 0.53 | 1.00 | 0.00 |
+
+: Chequeo predictivo posterior (resumen por escenario). {#tbl-ppp}
+
+![Chequeo predictivo posterior con $\sigma_0=0.10$.](Code/resultados/verificacion/ppp_3.4_0.10.png){#fig-ppp}
+
+**Lectura.** Mismo patrón que en grises: la **media** está bien reproducida
+(0.53–0.60); la **DE** nunca alcanza la observada (ppp = 1.00) — el campo
+latente típico no cubre el rango dinámico del astronauta (textura y bordes
+reales) — y el **contraste local** queda con ppp = 0.00 en los tres
+escenarios: el suavizado con un solo $\lambda$ reparte por igual un
+compromiso que la imagen pide desigual. En el RGB se añade la lectura ya
+documentada de la dirección de brillo: parte de la variabilidad real queda
+absorbida por el campo, de ahí $\mathbf\Sigma$ subestimado
+(@tbl-contr). Los chequeos cuantifican estas limitaciones sin necesidad de la
+verdad conocida.
 
 # Resultados
 
@@ -786,8 +954,57 @@ los parámetros, no del contenido de la escena.
    separables (un $\lambda$ por canal, coregionalización) serían más flexibles.
 5. **Bordes.** Igual que en el 3.3, la penalización cuadrática difumina
    discontinuidades.
-6. **Varias cadenas.** Con $n_{\text{eff}}(\lambda)\approx13$ es especialmente
-   recomendable correr varias cadenas y usar Gelman–Rubin.
+6. **Varias cadenas.** Los tests por segmentos confirman la alerta
+   ($\widehat R$ de $\lambda$ entre 1.05 y 1.18, Raftery–Lewis incumplido):
+   correr varias cadenas independientes y usar el $\widehat R$ multicaso es la
+   validación definitiva pendiente.
+
+# Tests que no pasan y cosas a mejorar
+
+Resumen ejecutivo de toda la batería (`convergencia_3.4.csv`, `ppp.csv`,
+`prior_predictivo.csv`; 22,000 muestras por cadena; umbrales: $\widehat R<1.01$,
+$|z|<1.96$ en Geweke, Raftery–Lewis $N_{\text{req}}\le22{,}000$, HW $p>0.05$,
+ppp en $[0.4,0.6]$):
+
+| Test | Resultado | Detalle |
+|:--|:--|:--|
+| $\widehat R$ por segmentos | **Falla para $\lambda$ (0.05 y sobre todo 0.20)** | $\lambda$: 1.007 / 1.020 / **1.179** (por segmentos máx.: 2.077 a 0.20); por rangos hasta 1.185. También $\Sigma_{31}$ a 0.05 (1.055) y $\Omega$ con máximos de 1.10–1.41 |
+| Raftery–Lewis | **Falla en 12 de 45 casos** | $\lambda$ a 0.05 (45,572) y 0.20 (52,346); $\Sigma_{22}$, $\Sigma_{31}$ a 0.05; y 8 componentes de $\mathbf\Omega$ (23,574–49,343), casi todos a 0.05 y 0.20 |
+| Efectivos (ESS) | **Críticos para $\lambda$** | Sólo **13–26 efectivos de 22,000**; $\mathbf\Omega$: 48–100; $\mathbf\Sigma$: 83–422. ACF$_{20}$ de $\lambda$ entre 0.95 y 0.99 |
+| Geweke | **No pasa en 6 de 45** | $\mu_R,\mu_B$ a 0.10 ($z\approx-1.99$); $\Omega_{11}$ a 0.10 ($z=2.21$); $\Sigma_{21},\Sigma_{22}$ a 0.20 ($z=-2.55,-2.70$); $\Omega_{31}$ a 0.20 ($z=2.46$) |
+| Heidelberger–Welch | **No pasa en 1** | $\Sigma_{31}$ a 0.05 ($p=0.0145$); el resto OK |
+| Chequeo predictivo previo | Pasa | Los tres estadísticos cubiertos (salvo borde en contraste a 0.05) |
+| ppp — DE | **No pasa (3/3)** | ppp = 1.00: ninguna réplica alcanza la DE observada |
+| ppp — contraste vecinal | **No pasa (3/3)** | ppp = 0.00 en los tres escenarios |
+| Sesgo de $\mathbf\Sigma$ | Confirmado a posteriori | $\Pr(\Sigma_{cc}<\sigma_0^2\mid y)=1$ en los tres escenarios; $\lambda$ a 0.20: $\Pr(\lambda>400)=0.045$ |
+| Sensibilidad de previas | **No corrida para este modelo** | `sensibilidad.R` cubre sólo el 3.3 |
+| $\widehat R$ multicaseno | **Pendiente** | Sólo cadena única por escenario |
+
+**Qué tener en cuenta / qué mejorar:**
+
+1. **$\lambda$ no está ni cerca de converger en los cuantiles** (ESS 13–26,
+   $\widehat R$ 1.18 a 0.20, Raftery pidiendo el doble de iteraciones). Las
+   medias de imagen son estables, pero **cualquier percentil de $\lambda$ es
+   de poca fiabilidad**. **Mejora principal:** reparametrizar la cresta
+   ($\mathbf Q=(\kappa\mathbf I+\mathbf L)\otimes\mathbf\Psi$ con
+   $\kappa=1/\lambda$, ver limitación 1) y/o alargar la cadena de $\lambda$
+   3–5×; el paso a lo largo de la cresta (limitación 2) atacaría la causa.
+2. **El fallo de Raftery y Geweke en $\mathbf\Omega$ y $\mathbf\Sigma$ está
+   concentrado en 0.05 y 0.20** —justo donde la cresta es más pronunciada— y
+   coincide con los fallos de ppp: el modelo no termina de decidir entre
+   suavizado fuerte ($\lambda$ grande) y ruido estructurado
+   ($\mathbf\Omega$ grande). **Mejora:** la misma reparametrización elimina
+   la correlación que frena la mezcla.
+3. **Los ppp fallan en DE y contraste en los tres escenarios** (peor que en
+   grises: aquí el contraste nunca se calza). **Mejora:** $\lambda$ por canal
+   (no separable), previa de $\mathbf\Sigma$ más informativa o estimación
+   del ruido en zonas planas, para separar ruido de brillo de textura.
+4. **Quemado posiblemente corto** (6 fallos de Geweke con $z$ pegados al
+   umbral). **Mejora:** descartar más iteraciones iniciales antes de los
+   tests.
+5. **Pendientes declarados:** sensibilidad de las previas para este modelo
+   (base/Jeffreys unit-info de $\mathbf\Sigma$), $\widehat R$ multicaseno, y
+   más de 30 réplicas por escenario en los ppp.
 
 # Referencias
 
@@ -811,3 +1028,7 @@ with application to image processing. *Journal of Multivariate Analysis*, 24(2),
 
 Rue, H., y Held, L. (2005). *Gaussian Markov random fields: Theory and
 applications*. Chapman & Hall/CRC.
+
+Vehtari, A., Gelman, A., Simpson, D., Carpenter, B., y Bürkner, P.-C. (2021).
+Rank-normalization, folding, and localization: An improved $\widehat R$ for
+assessing convergence of MCMC. *Bayesian Analysis*, 16(2), 667–718.

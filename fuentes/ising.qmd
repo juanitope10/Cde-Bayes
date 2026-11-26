@@ -724,7 +724,110 @@ luz de las trazas, la causa más probable es la combinación de alta
 autocorrelación con la excursión inicial, más que una falta de convergencia
 sostenida. Para respaldarlo se recomienda alargar el calentamiento o correr
 varias cadenas desde valores iniciales distintos y calcular el estadístico de
-Gelman–Rubin.
+Gelman–Rubin; los tests de la sección siguiente cubren esa recomendación en la
+medida en que lo permite una sola cadena.
+
+## Tests de convergencia sobre las trazas
+
+Sobre las mismas trazas post-calentamiento se calculó una batería completa de
+tests (script `convergencia.R`, resultados en
+`Code/resultados/convergencia/convergencia_3.2.csv`). Antes de los resultados,
+qué mide cada uno y por qué se necesitan varios: el criterio del curso
+(CVMC < 5 %) solo garantiza que **la media de esta cadena** está bien
+calculada; no garantiza que la cadena haya recorrido toda la posterior.
+
+- **Split-$\widehat R$ (Gelman–Rubin sobre segmentos).** Se divide la cadena
+  post-calentamiento en 4 segmentos contiguos que se tratan como cadenas
+  independientes, y se compara la varianza **entre** segmentos ($B$) con la
+  varianza **dentro** de cada uno ($W$):
+  $\widehat R=\sqrt{\widehat\sigma^2/W}$ con
+  $\widehat\sigma^2=\frac{n-1}{n}W+\frac{B}{n}$. Si los segmentos exploran la
+  misma región, $\widehat R\approx1$; si hay deriva o la mezcla es lenta, los
+  segmentos difieren y $\widehat R$ sube. Se reporta también el IC superior al
+  97.5 % (`gelman.diag` de `coda`). La versión **por rangos** (Vehtari et al.,
+  2021) transforma la muestra por sus rangos a la escala normal estándar y
+  calcula el $\widehat R$ tanto de la muestra como de su versión "plegada"
+  $|x-\text{mediana}|$; se reporta el máximo de ambos, que es robusto a colas
+  pesadas y asimetrías. Umbral de referencia: $<1.01$.
+- **ESS *bulk* y ESS *tail*.** El tamaño efectivo de muestra corrige $B$ por la
+  autocorrelación. El *bulk* (sobre la muestra por rangos) mide la precisión
+  de la media posterior; el *tail* es el mínimo del tamaño efectivo de los
+  indicadores $I(\theta\le q_{0.05})$ e $I(\theta\le q_{0.95})$, es decir, la
+  precisión con que se estiman las **colas** de donde salen los intervalos.
+- **Heidelberger–Welch (`heidel.diag`).** Dos tests: (a) **estacionariedad**,
+  un Cramér–von Mises de la cadena contra su versión truncada (si $p>0.05$ no
+  se rechaza que la cadena sea estacionaria); (b) **semi-amplitud**: el error
+  de MC de la media debe ser pequeño frente a la DE posterior (menos del 10 %).
+- **Raftery–Lewis (`raftery.diag`).** ¿Cuántas iteraciones hacen falta para
+  estimar el cuantil 2.5 % con precisión $\pm0.0125$ y probabilidad 0.95? El
+  mínimo teórico (~600) se infla con la autocorrelación: si el número pedido
+  supera las iteraciones disponibles, las colas quedan poco estimadas aunque
+  la media esté bien.
+- **Geweke $z$.** Compara la media del primer 10 % con la del último 50 % de la
+  cadena; bajo estacionariedad es aproximadamente $\textsf{N}(0,1)$, así que
+  $|z|>1.96$ sugiere deriva.
+- **ACF numérica.** Autocorrelación en retardos fijos (1, 5, 10, 20, 50):
+  resume qué tan redundantes son las muestras.
+
+Como cada escenario tiene **una sola cadena**, los $\widehat R$ se calculan
+entre segmentos de ella: detectan deriva y mezcla lenta *dentro* de la cadena,
+pero no sustituyen a varias cadenas independientes (que siguen siendo la
+validación definitiva; queda declarada como pendiente).
+
+| $\rho_0$ | Parámetro | $\widehat R$ rangos | $\widehat R$ sup | ESS bulk | ESS tail | Geweke $z$ | HW $p$ estac. | Raftery $N$ | ACF(1) | ACF(20) |
+|--:|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| 0.05 | $\beta$ | 1.02 | 1.10 | 96 | 107 | −1.56 | 0.47 | 9,315 | 0.94 | 0.29 |
+| 0.05 | $\rho$ | 1.01 | 1.05 | 359 | 707 | −2.57 | 0.22 | 797 | 0.50 | 0.09 |
+| 0.10 | $\beta$ | 1.05 | 1.21 | 69 | 167 | 3.25 | 0.07 | 6,349 | 0.96 | 0.42 |
+| 0.10 | $\rho$ | 1.02 | 1.09 | 234 | 538 | 4.39 | 0.31 | 775 | 0.53 | 0.15 |
+| 0.20 | $\beta$ | 1.05 | 1.18 | 54 | 155 | −1.71 | 0.10 | 12,640 | 0.97 | 0.50 |
+| 0.20 | $\rho$ | 1.02 | 1.06 | 144 | 591 | −1.46 | 0.06 | 1,308 | 0.52 | 0.19 |
+
+: Tests de convergencia de $\beta$ y $\rho$ (3,000 muestras tras el calentamiento; `convergencia_3.2.csv`). {#tbl-conv}
+
+![Trazas por segmentos y ACF de $\beta$ y $\rho$ con $\rho_0=0.10$.](Code/resultados/convergencia/convergencia_3.2_0.10.png){#fig-conv}
+
+**Lectura.** Los dos parámetros pasan el test de estacionariedad de
+Heidelberger–Welch ($p$ entre 0.06 y 0.47), pero $\beta$ queda por encima del
+umbral $\widehat R<1.01$ en los tres escenarios (1.02–1.05) y Raftery–Lewis
+pide entre 6,300 y 12,600 iteraciones para su cuantil 2.5 %, frente a las
+3,000 disponibles: la traza de $\beta$ no termina de estabilizarse entre
+segmentos y su cola se estima con poca precisión. $\rho$ queda en el límite
+(1.01–1.02 y Raftery cumplido). Esto refuerza —y cuantifica— la lectura
+anterior: la mezcla lenta de $\beta$ es real, no un artefacto del CVMC, y el
+respaldo definitivo exigiría varias cadenas independientes; con los recursos
+del caso, el $\widehat R$ por segmentos marca la misma alerta.
+
+## Probabilidades posteriores de contrastes
+
+Preguntas probabilísticas directas sobre los parámetros, como fracción de la
+cadena (transformación de muestras; `contrastes.csv`):
+
+| $\rho_0$ | $\Pr(\beta>\beta_c\mid y)$ | $\Pr(\rho<\rho_0\mid y)$ |
+|--:|--:|--:|
+| 0.05 | 1.000 | 1.000 |
+| 0.10 | 1.000 | 1.000 |
+| 0.20 | 1.000 | 1.000 |
+
+: Probabilidades posteriores de los contrastes más relevantes, con
+$\beta_c=\log(1+\sqrt2)/2\approx0.4407$ la temperatura crítica del Ising 2D. {#tbl-contr}
+
+**Lectura.** $\Pr(\beta>\beta_c\mid y)=1$: es **seguro a posteriori** que la
+imagen latente está en la fase de regiones homogéneas (por encima de la
+transición de fase del modelo), lo que respalda la lectura cualitativa de las
+medias posteriores (0.51–0.59). $\Pr(\rho<\rho_0\mid y)=1$: el modelo
+subestima la tasa de volteos con **certeza posterior** — confirma en lenguaje
+probabilístico lo documentado: los píxeles de ruido indistinguibles de
+estructura real se absorben en $\boldsymbol{x}$.
+
+**Lo que no aplica al Ising.** La verosimilitud marginal
+$p(\boldsymbol y\mid\beta,\rho)$ exige la constante de partición
+$Z(\beta)$ del campo de Ising — la misma intractabilidad que resuelve el
+algoritmo de intercambio —, de modo que la traza de la log-verosimilitud y el
+DIC no son calculables de forma simple (sí lo son en los GMRF). El chequeo
+predictivo posterior requeriría replicar campos latentes
+$\boldsymbol X^*\sim p(\boldsymbol X\mid\boldsymbol y,\beta,\rho)$, que solo
+están almacenados como momentos; queda como extensión futura.
 
 # Resultados
 
@@ -749,6 +852,15 @@ mientras que en las regiones homogéneas solo baja de 99.8 % a 99.4 %. El mapa d
 $\hat\pi_i$ (@fig-panel) muestra que la incertidumbre se ubica en el contorno de
 la silueta y en detalles finos como las patas.
 
+**Incertidumbre de la clasificación MAP.** El MAP asigna cada píxel por
+$\hat\pi_i\ge 0.5$ y no distingue entre un píxel decidido (0.99) y uno
+dudoso (0.51). Cuantificando la ambigüedad ($\hat\pi_i\in[0.4,0.6]$): solo el
+0.7–1.4 % de los píxeles es ambiguo, pero **concentra el 22–28 % de los
+errores** del MAP; la precisión en los píxeles ambiguos es 54–82 %, frente a
+más del 98 % en el resto. El mapa de $\hat\pi_i$ (@fig-panel) funciona por
+tanto como mapa de fiabilidad de la clasificación: los errores del MAP ocurren
+casi exclusivamente donde $\hat\pi_i\approx\frac12$.
+
 **Influencia de $\beta$.** Las tres medias posteriores (0.51–0.59) están por
 encima de $\beta_c\approx0.44$, coherente con una imagen formada por grandes
 regiones homogéneas. $\hat\beta$ disminuye al aumentar el ruido: la imagen
@@ -756,7 +868,9 @@ latente que la cadena reconstruye conserva más irregularidades, y el modelo
 infiere menos homogeneidad. Un $\beta$ grande limpia mejor las regiones
 homogéneas pero tiende a redondear esquinas y borrar detalles de un píxel de
 ancho; un $\beta$ pequeño conserva detalles pero deja más ruido. En el primer
-caso los errores se ubican en los bordes.
+caso los errores se ubican en los bordes. Estas relaciones se leen como
+asociaciones dentro del modelo (donde la verdad es conocida por simulación),
+no como afirmaciones causales sobre imágenes reales.
 
 **Estimación de $\rho$.** $\rho$ se subestima sistemáticamente y el IC 95 % no
 contiene el valor simulado en ninguno de los tres niveles. Parte de los píxeles
@@ -773,9 +887,11 @@ implementación.
 
 1. **Aproximación del intercambio.** Con $K=25$ el algoritmo no es exacto.
    Comparar con $K=50$ o $K=100$ cuantificaría el sesgo en $\beta$.
-2. **Mezcla lenta de $\beta$.** $n_{\text{eff}}$ entre 54 y 95 y estadísticos de
-   Geweke elevados en un escenario. Varias cadenas independientes y el
-   diagnóstico de Gelman–Rubin darían más respaldo.
+2. **Mezcla lenta de $\beta$.** $n_{\text{eff}}$ entre 54 y 95, $\widehat R$ por
+   segmentos entre 1.02 y 1.05 y Raftery–Lewis por encima de las iteraciones
+   disponibles (sección de tests de convergencia). Varias cadenas
+   independientes y el $\widehat R$ de Gelman–Rubin multicaso darían el
+   respaldo definitivo.
 3. **Costo.** El paso de $\beta$ domina el costo ($K$ barridos por iteración) y
    la mezcla del Gibbs de un sitio empeora con el tamaño de la imagen cerca de
    $\beta_c$. Para imágenes grandes serían preferibles algoritmos de clústeres
@@ -784,6 +900,48 @@ implementación.
 4. **Modelo.** El Ising de primer orden con un único $\beta$ trata igual todas
    las direcciones y regiones; vecindades de segundo orden o $\beta$ variable
    espacialmente podrían preservar mejor esquinas y detalles finos.
+
+# Tests que no pasan y cosas a mejorar
+
+Resumen ejecutivo de la batería (`convergencia_3.2.csv`, 6 combinaciones
+parámetro × escenario, 3,000 muestras por cadena; umbrales: $\widehat R<1.01$,
+$|z|<1.96$ en Geweke, Raftery–Lewis con $N_{\text{req}}\le3{,}000$,
+Heidelberger–Welch $p>0.05$):
+
+| Test | Resultado | Detalle |
+|:--|:--|:--|
+| $\widehat R$ por segmentos (split-R̂) | **No pasa en las 6 combinaciones** | $\beta$: 1.020–1.051 (máx. por segmentos 1.207); $\rho$: 1.012–1.023. Ninguna queda por debajo del 1.01 ideal |
+| Geweke (primera vs. segunda mitad) | **No pasa en 3 de 6** | $\beta$ a 0.10 ($z=3.25$); $\rho$ a 0.10 ($z=4.39$) y a 0.05 ($z=-2.57$). Indicios de no estacionariedad temprana |
+| Raftery–Lewis (longitud para colas 2.5 %/97.5 %) | **No pasa para $\beta$** en ningún escenario | $N_{\text{req}}$ = 6,349 / 9,315 / 12,640 frente a 3,000 muestras disponibles (para $\rho$: 775–1,308, sí pasa) |
+| Efectivos (ESS/$n_{\text{eff}}$) | **Muy bajo para $\beta$** | sólo 54–95 efectivos de 3,000 (1.8–3.2 %); $\rho$: 143–355. ACF$_1$ de $\beta$ hasta 0.965 |
+| Heidelberger–Welch (media) | Pasa | Las 6 medias pasan el test de estacionariedad y el intervalo |
+| ESS / Geweke / Raftery multicaseno, $\widehat R$ de Gelman–Rubin con varias cadenas | **No aplicable** | Cadena única: el multicaseno sigue pendiente |
+| Log-verosimilitud marginal, DIC, WAIC, ppp | **No aplica** | $Z(\beta)$ no se conoce (doble intractabilidad); ver «Lo que no aplica al Ising» en probabilidades de contrastes |
+
+**Qué tener en cuenta / qué mejorar:**
+
+1. **La cadena de $\beta$ es el eslabón débil.** Con 3,000 muestras no se
+   alcanzan las colas (Raftery pide hasta 4× más) y la mediana $\hat\beta$,
+   aunque estable, se apoya en pocos efectivos. **Mejora:** alargar la cadena
+   de $\beta$ (o las tres) al menos 4–5×, o mantener las dos cadenas
+   independientes en paralelo que ya existen y calcularles $\widehat R$.
+2. **Los fallos de Geweke en los dos primeros tercios de las pruebas de
+   0.10 sugieren residuos de no estacionariedad** (quemado insuficiente).
+   **Mejora:** descartar una fracción mayor de quemado antes de los tests.
+3. **$K=25$ deja la cadena de $\beta$ aproximada.** **Mejora:** comparar con
+   $K=50$ y $K=100$ para cuantificar el sesgo de la aproximación de
+   intercambio.
+4. **Aceptación de $\beta$ entre 21 % y 26 %** (por debajo del 30 %
+   objetivo de la adaptación). **Mejora:** reajustar $\delta$ en la etapa de
+   calentamiento para que la tasa final se acerque al 30 %.
+5. **Sensibilidad de previas no corrida para este modelo** (`sensibilidad.R`
+   cubre sólo el 3.3). **Mejora:** repetir el experimento con
+   $\beta\sim\textsf{G}(2,4)$ y $\rho\sim\textsf{G}(2,10)$ debilitadas e
+   informativas.
+6. **Los píxeles ambiguos siguen siendo ambiguos** ($\pi_i\in[0.4,0.6]$ en el
+   69–71 % de los píxeles a 0.05 y 0.10): es informativo, pero **mejora**
+   posible: una previa $\beta$ con más masa cerca de $\beta_c$ (o más
+   iteraciones) daría $\pi_i$ más alejados de 0.5.
 
 # Referencias
 
@@ -812,3 +970,7 @@ order-disorder transition. *Physical Review*, 65(3–4), 117–149.
 Propp, J. G., y Wilson, D. B. (1996). Exact sampling with coupled Markov chains
 and applications to statistical mechanics. *Random Structures & Algorithms*,
 9(1–2), 223–252.
+
+Vehtari, A., Gelman, A., Simpson, D., Carpenter, B., y Bürkner, P.-C. (2021).
+Rank-normalization, folding, and localization: An improved $\widehat R$ for
+assessing convergence of MCMC. *Bayesian Analysis*, 16(2), 667–718.

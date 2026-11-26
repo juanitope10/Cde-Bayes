@@ -137,9 +137,20 @@ Interpretación de los tres parámetros:
 - $\tau$: concentración alrededor de $\mu$. Penaliza alejarse de $\mu$ **píxel a píxel**, sin mirar vecinos.
 - $\lambda$: suavidad espacial. Penaliza las **diferencias entre vecinos**.
 
-Si $\tau=0$, $\mathbf{Q}=\lambda\mathbf{L}$ es singular (el vector $\boldsymbol{1}$
-no se penaliza) y la previa es **intrínseca** (impropia): sumarle una constante a
-toda la imagen no cambia su densidad. La condición $\tau>0$ la vuelve propia.
+Si $\tau=0$, $\mathbf{Q}=\lambda\mathbf{L}$ es singular: el vector
+$\boldsymbol{1}$ es su único vector nulo, de modo que
+$\operatorname{rango}(\mathbf{L})=P-1$ y la previa es **intrínseca**
+(impropia): sumarle una constante a toda la imagen no cambia su densidad. Dos
+consecuencias que conviene explicitar. Primera, esa impropiedad no contamina la
+inferencia: la verosimilitud gaussiana fija la localización y la posterior
+conjunta es propia incluso en el caso intrínseco; con la previa real
+($\tau>0$ con probabilidad 1 bajo $\textsf{G}(a_\tau,b_\tau)$) la previa de
+$\boldsymbol{x}$ ya es propia, porque $\tau\mathbf{I}+\lambda\mathbf{L}$ es
+definida positiva. Segunda, el rango $P-1$ explica por qué el log-determinante
+se evalúa sobre $|\mathbf{I}+\lambda\mathbf{L}|$ (o sobre
+$\prod_k(\tau+\lambda w_k)$ con $w_1=0$): el cero de la Laplaciana está
+neutralizado por la identidad (o por $\tau$) y no hay que invertir
+$\mathbf{Q}$ nunca.
 
 ::: {#prp-markov-gmrf}
 ## Propiedad de Markov del GMRF
@@ -672,7 +683,45 @@ mucho menos que los ~26 minutos del Ising, porque aquí no hay barridos auxiliar
 **Sensibilidad a la previa.** $\lambda$ y $\sigma^2$ los determinan los datos
 (miles de grados de libertad). $\tau$ y $\mu$, en cambio, sí dependen de su
 previa (sección 4.1 y @prp-cond-mu), pero no afectan la restauración: el peso
-de $\mu$ en $m_i$ es despreciable.
+de $\mu$ en $m_i$ es despreciable. Esto se verificó cuantitativamente
+(`sensibilidad.R`): el escenario $\sigma_0=0.10$ se re-corrió con la misma
+semilla de ruido bajo **cinco variantes de previa** —las tres primeras
+conservan las medias previas del modelo base (débil e informativa), más dos
+estándares de la literatura: **Jeffreys**
+($p(\theta)\propto1/\theta$ para $\sigma^2$, $\tau$ y $\lambda$: las previas
+impropias de escala que el MH y el Gibbs de $\sigma^2$ aceptan tal cual) e
+**información unitaria** para $\sigma^2$
+($\textsf{GI}(1/2,\ \widehat\sigma_y^2/2)$: la información de una sola
+observación; para $\tau$ y $\lambda$ no hay unitaria estándar y se conservan
+las de base)—:
+
+| Variante | $\hat\mu$ | $\hat\tau$ | $\hat\lambda$ | $\hat\sigma^2$ | MSE | DIC | WAIC |
+|:--|--:|--:|--:|--:|--:|--:|--:|
+| base | 0.5065 | 0.00253 | 32.25 | 0.005287 | 0.004460 | −21,169.5 | −29,995 |
+| débil | 0.5061 | 0.00154 | 32.26 | 0.005293 | 0.004457 | −21,169.5 | −29,984 |
+| informativa | 0.5071 | 0.01132 | 32.26 | 0.005300 | 0.004455 | −21,163.6 | −29,972 |
+| Jeffreys | 0.5048 | 0.00065 | 32.31 | 0.005301 | 0.004451 | −21,168.4 | −29,964 |
+| unit-info | 0.5063 | 0.00254 | 32.49 | 0.005370 | 0.004414 | −21,169.4 | −29,821 |
+
+: Sensibilidad de medias posteriores, MSE y criterios de comparación a la
+elección de previas ($\sigma_0=0.10$, misma semilla de ruido;
+`sensibilidad_dic_waic.csv`). El DIC es el marginal de la sección anterior y
+el WAIC es el condicional punto a punto acumulado en el MCMC (los 16,384
+$x_i$ latentes cuentan como parámetros: por eso $p_{\text{WAIC}}\approx7,000$
+y las diferencias deben leerse por observación, $\sim0.001$–$0.005$ nats por
+píxel). {#tbl-sens}
+
+**Lectura.** $\mu$, $\lambda$ y $\sigma^2$ se mueven menos de un 1 % entre las
+cinco variantes: los datos los dominan. $\tau$ cambia un orden de magnitud
+(0.0007–0.0113): es el único parámetro con información débil y su valor
+numérico depende de su previa. El MSE de restauración varía menos de un 1 %.
+Los criterios dan el mismo mensaje: las diferencias de DIC son de al más
+6 puntos (la previa informativa queda algo peor, coherente con que los datos
+prefieren $\tau$ pequeño), y las de WAIC, leves al pesarlas por observación.
+**Ninguna conclusión del modelo cambia con la previa**: lo que sí debe
+advertirse es que $\tau$ no es interpretable como una magnitud puntual.
+
+![Densidades posteriores de $\mu$, $\tau$, $\lambda$ y $\sigma^2$ bajo las cinco variantes de previa.](Code/resultados/sensibilidad/sensibilidad_previas.png){#fig-sens}
 
 # Estimación posterior y restauración
 
@@ -735,6 +784,198 @@ Dos observaciones honestas:
 - **Algunos píxeles tienen CVMC alto** (máximo 10.1 % con $\sigma_0=0.20$).
   Son píxeles con media cercana a cero (el denominador se acota en 0.05); el
   CVMC mediano de los píxeles es menor que 0.5 % en los tres escenarios.
+
+## Tests de convergencia sobre las trazas
+
+Batería completa calculada sobre las trazas post-calentamiento
+(`convergencia.R`, `convergencia_3.3.csv`). El CVMC < 5 % solo garantiza que la
+media de *esta cadena* está bien calculada; los tests siguientes evalúan algo
+distinto: que la cadena sea estacionaria, explore bien la posterior y alcance
+sus colas.
+
+- **Split-$\widehat R$ (Gelman–Rubin sobre segmentos; clásico y por rangos,
+  Vehtari et al. 2021).** La cadena post-calentamiento se divide en 4
+  segmentos contiguos tratados como cadenas independientes y se compara la
+  varianza entre segmentos con la interna:
+  $\widehat R=\sqrt{\widehat\sigma^2/W}$. La versión por rangos transforma la
+  muestra a la escala normal estándar y usa el máximo entre el $\widehat R$ de
+  la muestra y el de su versión plegada $|x-\text{mediana}|$ (robusto a colas
+  pesadas). Umbral: $<1.01$. También se reporta el IC superior 97.5 %
+  (`gelman.diag`). Con una sola cadena, mide deriva/mezcla lenta *dentro* de
+  la cadena; la validación definitiva sigue siendo multicaso.
+- **ESS *bulk* y ESS *tail*.** Tamaño efectivo corregido por autocorrelación:
+  el *bulk* mide la precisión de la media; el *tail*, la de las colas 5 %/95 %
+  de donde salen los intervalos.
+- **Heidelberger–Welch (`heidel.diag`).** (a) Test de estacionariedad
+  (Cramér–von Mises de la cadena contra su versión truncada; $p>0.05$ = no se
+  rechaza); (b) semi-amplitud: el error de MC de la media debe ser $<10$ % de
+  la DE posterior.
+- **Raftery–Lewis (`raftery.diag`).** Iteraciones necesarias para estimar el
+  cuantil 2.5 % con precisión $\pm0.0125$ y probabilidad 0.95; el mínimo
+  teórico (~600) se infla con la autocorrelación. Si pide más de las
+  disponibles, las colas quedan poco estimadas.
+- **Geweke $z$** (medias del primer 10 % vs último 50 %; $|z|>1.96$ sugiere
+  deriva) y **ACF numérica** en retardos 1, 5, 10, 20, 50.
+
+Resumen por escenario:
+
+| $\sigma_0$ | Parámetro | $\widehat R$ rangos | $\widehat R$ sup | ESS bulk | ESS tail | Geweke $z$ | HW $p$ estac. | Raftery $N$ | ACF(1) | ACF(20) |
+|--:|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| 0.05 | $\mu$ | 1.00 | 1.00 | 22,000 | 12,092 | −1.95 | 0.21 | 1,240 | −0.01 | 0.01 |
+| 0.05 | $\tau$ | 1.00 | 1.00 | 1,839 | 2,834 | −0.38 | 0.53 | 4,505 | 0.81 | 0.03 |
+| 0.05 | $\lambda$ | 1.00 | 1.01 | 1,444 | 2,767 | 0.69 | 0.06 | 3,069 | 0.79 | 0.11 |
+| 0.05 | $\sigma^2$ | 1.03 | 1.12 | 120 | 235 | 0.05 | 0.14 | 21,791 | 0.99 | 0.82 |
+| 0.10 | $\mu$ | 1.00 | 1.00 | 21,995 | 8,759 | 0.44 | 0.63 | 2,244 | −0.01 | −0.01 |
+| 0.10 | $\tau$ | 1.00 | 1.00 | 1,561 | 1,765 | 0.94 | 0.33 | 6,180 | 0.79 | 0.05 |
+| 0.10 | $\lambda$ | 1.00 | 1.02 | 248 | 484 | 0.85 | 0.47 | 11,116 | 0.98 | 0.66 |
+| 0.10 | $\sigma^2$ | 1.00 | 1.02 | 248 | 784 | 0.86 | 0.39 | 7,915 | 0.95 | 0.58 |
+| 0.20 | $\mu$ | 1.00 | 1.00 | 22,433 | 6,685 | −0.03 | 0.47 | 1,378 | −0.02 | −0.01 |
+| 0.20 | $\tau$ | 1.00 | 1.00 | 741 | 933 | −0.52 | 0.61 | 10,468 | 0.91 | 0.21 |
+| 0.20 | $\lambda$ | 1.00 | 1.01 | 81 | 193 | −0.43 | 0.88 | 34,381 | 0.99 | 0.86 |
+| 0.20 | $\sigma^2$ | 1.00 | 1.01 | 185 | 563 | −0.66 | 0.68 | 5,706 | 0.74 | 0.47 |
+
+: Tests de convergencia de los cuatro parámetros (22,000 muestras tras el calentamiento). {#tbl-conv}
+
+![Trazas por segmentos y ACF de $\mu$, $\tau$, $\lambda$ y $\sigma^2$ con $\sigma_0=0.10$.](Code/resultados/convergencia/convergencia_3.3_0.10.png){#fig-conv}
+
+**Lectura.** Todos los parámetros pasan el test de estacionariedad de
+Heidelberger–Welch ($p$ entre 0.06 y 0.88) y Geweke queda dentro de
+$\pm1.96$; el $\widehat R$ por segmentos es 1.00–1.01 salvo $\sigma^2$ con
+$\sigma_0=0.05$ (1.03, con IC superior 1.12), cuya cola decae muy lento
+(ACF(20) = 0.82, ESS *bulk* 120). Raftery–Lewis pide más iteraciones de las
+disponibles para el cuantil 2.5 % de $\lambda$ con $\sigma_0=0.20$ (34,381
+frente a 22,000) y queda en el límite para $\sigma^2$ con $\sigma_0=0.05$
+(21,791). En conjunto, los tests **confirman la convergencia de la corrida**
+para medias e intervalos de los cuatro parámetros; solo las colas de
+$\sigma^2$ ($\sigma_0=0.05$) y $\lambda$ ($\sigma_0=0.20$) exigirían más
+iteraciones para cuantiles finos, y el $\widehat R$ multicaso con cadenas
+independientes seguiría siendo la validación definitiva (limitación ya
+declarada).
+
+## Log-verosimilitud marginal y DIC
+
+Otro diagnóstico estándar del curso (cuaderno 07: la traza de la
+log-verosimilitud) y el insumo de los criterios de comparación del cuaderno 11.
+Aquí la verosimilitud **marginal** de los datos tiene forma cerrada:
+$\boldsymbol y\mid\mu,\sigma^2,\tau,\lambda\sim\textsf{N}_P(\mu\boldsymbol 1,\
+\sigma^2\mathbf I+\mathbf Q^{-1})$, y su log-densidad se evalúa en $O(P)$ con
+la base de autovalores de la Laplaciana ($s_k=\sigma^2+(\tau+\lambda w_k)^{-1}$,
+transformada coseno de $\boldsymbol y$): verificada contra la densa de
+`mvtnorm` en una rejilla pequeña con error $<10^{-8}$. La traza resultante se
+calcula por iteración sobre la cadena guardada (`verificaciones.R`):
+
+| $\sigma_0$ | $\log p(\boldsymbol y\mid\theta)$ media | $p_D$ | DIC |
+|--:|--:|--:|--:|
+| 0.05 | 17,333.0 | 2.3 | −34,663.7 |
+| 0.10 | 10,586.4 | 3.3 | −21,169.5 |
+| 0.20 | 1,598.0 | 3.6 | −3,192.4 |
+
+: Log-verosimilitud marginal media por escenario y DIC
+($\text{DIC}=-2\log p(\boldsymbol y\mid\bar\theta)+2p_D$; valores negativos
+grandes porque son log-densidades). {#tbl-dic}
+
+![Traza de la log-verosimilitud marginal con $\sigma_0=0.10$: la media de la cadena (verde) y el valor en $\bar\theta$ (naranja) casi coinciden.](Code/resultados/verificacion/ll_traza_3.3_0.10.png){#fig-ll}
+
+**Lectura.** El número efectivo de parámetros $p_D$ es 2.3–3.6 (de 4
+parámetros): los datos dominan las previas, como era de esperar con 16,384
+observaciones. La traza (@fig-ll) es estable y sin deriva — el mismo mensaje
+que los tests anteriores, visto desde la verosimilitud. Los DIC entre
+escenarios **no se comparan** (cada uno tiene su propia realización de
+ruido); el uso legítimo del DIC aquí es comparar variantes del modelo sobre
+los mismos datos (sección de sensibilidad).
+
+## Probabilidades posteriores de contrastes
+
+Preguntas probabilísticas directas sobre los parámetros, como fracción de la
+cadena (transformación de muestras; `contrastes.csv`):
+
+| $\sigma_0$ | $\Pr(\sigma^2<\sigma_0^2\mid y)$ | $\Pr(\tau<0.01\mid y)$ | $\Pr(\lambda>20\mid y)$ |
+|--:|--:|--:|--:|
+| 0.05 | 1.000 | 0.993 | 1.000 |
+| 0.10 | 1.000 | 0.985 | 1.000 |
+| 0.20 | 1.000 | 0.979 | 1.000 |
+
+: Probabilidades posteriores de los contrastes más relevantes. {#tbl-contr}
+
+**Lectura.** Que $\Pr(\sigma^2<\sigma_0^2\mid y)=1$ en los tres escenarios
+confirma en lenguaje probabilístico el sesgo documentado: el modelo absorbe
+parte de la señal (textura real) dentro del campo latente y **subestima el
+ruido con certeza posterior**. $\Pr(\tau<0.01\mid y)=0.98$–$0.99$: es casi
+seguro que el atraer los píxeles hacia $\mu$ no aporta (la imagen vive lejos
+de un gris homogéneo). $\Pr(\lambda>20\mid y)=1$: el suavizado espacial está
+presente con certeza en los tres escenarios.
+
+## Chequeos predictivos: previo y posterior
+
+Dos verificaciones estándar del modelado bayesiano (cuadernos 05–08) que se
+añadieron en `verificaciones.R`. Ambas simulan imágenes completas con el
+**muestreador GMRF exacto** (Cholesky disperso permutado de
+$\mathbf Q=\tau\mathbf I+\lambda\mathbf L$, Rue 2001): se extraen
+$\boldsymbol x^*\sim\textsf{N}(\mu\boldsymbol 1,\mathbf Q^{-1})$ y luego
+$\boldsymbol y^*=\boldsymbol x^*+\boldsymbol\epsilon$.
+
+**Chequeo predictivo previo.** Antes de ver los datos: se simulan 30 imágenes
+completas con los hiperparámetros de las previas
+($\mu\sim\textsf{N}(0.5,0.25)$, $\sigma^2\sim\textsf{IG}(2,0.01)$,
+$\tau\sim\textsf{G}(1,0.05)$, $\lambda\sim\textsf{G}(2,0.1)$) y se comprueban
+las escalas:
+
+| Estadístico | Rango de las 30 imágenes previas | Observado (3 escenarios) | ¿Cubierto? |
+|:--|:--|:--|:--|
+| media | [−0.25, 1.67] | 0.506–0.507 | sí, con holgura |
+| DE | [0.10, 0.28] | 0.289–0.348 | ligeramente por debajo |
+| contraste entre vecinos | [0.10, 0.25] | 0.074–0.232 | casi (falta el extremo bajo) |
+
+: Chequeo predictivo previo (30 simulaciones; `prior_predictivo.csv`). {#tbl-pprev}
+
+**Lectura.** Las previas son débilmente informativas como se pretendía (medias
+simuladas de −0.25 a 1.67 cubren de sobra la imagen). Hay una **tensión leve
+en la DE**: la imagen real tiene más variabilidad global que un campo típico
+de estas previas (0.289–0.348 frente a un máximo previo de 0.28) — coherente
+con que las previas suavizan más que la textura real. Con 16,384 datos la
+previa pesa poco ($p_D\approx3$), pero el chequeo lo hace explícito en lugar
+de darlo por supuesto.
+
+**Chequeo predictivo posterior (ppp).** Con $\theta^{(t)}$ de la cadena se
+simulan 30 réplicas completas de los datos
+($\boldsymbol x^*\sim p(\boldsymbol x\mid\theta^{(t)})$,
+$\boldsymbol y^*\sim p(\boldsymbol y\mid\boldsymbol x^*,\theta^{(t)})$) y se
+comparan estadísticos $t$ con los de $\boldsymbol y$ observado;
+$\text{ppp}=\Pr\{t(\boldsymbol y^*)\le t(\boldsymbol y)\}$ (0.5 = bien
+calibrado; cercano a 0 o 1 = el modelo no reproduce ese aspecto):
+
+| $\sigma_0$ | ppp (media) | ppp (DE) | ppp (contraste) |
+|--:|--:|--:|--:|
+| 0.05 | 0.60 | 1.00 | 0.00 |
+| 0.10 | 0.40 | 1.00 | 0.00 |
+| 0.20 | 0.40 | 1.00 | 0.53 |
+
+: Chequeo predictivo posterior (30 réplicas por escenario; `ppp.csv`,
+figuras `ppp_3.3_*.png`). {#tbl-ppp}
+
+![Chequeo predictivo posterior con $\sigma_0=0.10$: histogramas de los
+estadísticos de las réplicas con el valor observado en rojo.](Code/resultados/verificacion/ppp_3.3_0.10.png){#fig-ppp}
+
+**Lectura.** El modelo reproduce bien la **media** (ppp 0.4–0.6), pero los dos
+estadísticos de variabilidad delatan la falta de ajuste que ya se conocía por
+otros medios — y esta vez sin usar la verdad conocida:
+
+- **DE (ppp = 1.00 en los tres escenarios):** ninguna réplica alcanza la DE
+  observada (p. ej. con $\sigma_0=0.10$: réplicas 0.17–0.24 frente a 0.30
+  observada). Un campo latente típico del modelo no cubre el rango dinámico
+  de la imagen real: la estructura (bordes, textura) se le escapa al
+  suavizado cuadrático. Es la misma raíz de la subestimación de $\sigma^2$.
+- **Contraste entre vecinos (ppp = 0.00 con poco y medio ruido; 0.53 con
+  $\sigma_0=0.20$):** las réplicas tienen sistemáticamente algo más de
+  contraste local que lo observado con poco ruido (0.128–0.131 frente a
+  0.126) y se calzan cuando el ruido domina (0.20). El modelo con un solo
+  $\lambda$ no puede reproducir a la vez las regiones planas y los bordes
+  fuertes de la imagen: el compromiso del suavizado es uniforme donde los
+  datos no lo son.
+
+En conjunto: los chequeos predictivos **confirman con números lo que las
+limitaciones declaraban** (confusión ruido–textura, bordes difuminados,
+$\sigma^2$ subestimado) y muestran que el ajuste de la media es sólido.
 
 # Resultados
 
@@ -851,8 +1092,12 @@ vecinos y de los parámetros, no del contenido.
   mejor las regiones homogéneas, pero desenfoca más los bordes.
 - **Detalles finos** (edificios del fondo, patas del trípode): se pierden con el
   mismo mecanismo; con $\sigma_0=0.20$ casi desaparecen (@fig-comp).
-- **$\tau$**: con $\hat\tau\approx0.0025$, su efecto es nulo; la imagen no se
+- **$\tau$**: con $\hat\tau\approx0.0025$, su contribución al suavizado es nula;
+  la imagen no se
   atrae hacia ningún nivel de gris global. Un $\tau$ grande la volvería grisácea.
+  Que $\hat\tau$ sea pequeño no implica que el modelo "explique" la variabilidad
+  total de la imagen: solo dice que el atraer los píxeles hacia $\mu$ no aporta
+  frente al término espacial y a los datos.
 
 # Limitaciones y recomendaciones
 
@@ -870,8 +1115,54 @@ vecinos y de los parámetros, no del contenido.
    muestrearse la imagen completa en bloque con un Cholesky de
    $\sigma^{-2}\mathbf{I}+\mathbf{Q}$ (Rue, 2001), o integrarla analíticamente y
    muestrear solo los parámetros.
-5. **Varias cadenas.** Añadir el diagnóstico de Gelman–Rubin con cadenas desde
-   valores iniciales dispersos.
+5. **Varias cadenas.** Los tests sobre la cadena única (split-R̂ por rangos,
+   Heidelberger–Welch, Raftery–Lewis; sección de tests de convergencia)
+   confirman la convergencia de medias e intervalos salvo en las colas ya
+   señaladas; el $\widehat R$ de Gelman–Rubin multicaso con cadenas desde
+   valores iniciales dispersos queda como validación definitiva.
+
+# Tests que no pasan y cosas a mejorar
+
+Resumen ejecutivo de toda la batería (`convergencia_3.3.csv`, `ppp.csv`,
+`prior_predictivo.csv`, `sensibilidad_dic_waic.csv`; 22,000 muestras por
+cadena; umbrales: $\widehat R<1.01$, $|z|<1.96$ en Geweke,
+Raftery–Lewis $N_{\text{req}}\le22{,}000$, HW $p>0.05$, ppp en $[0.4,0.6]$):
+
+| Test | Resultado | Detalle |
+|:--|:--|:--|
+| $\widehat R$ por segmentos | **No pasa sólo en $\sigma^2$ a 0.05** | 1.031 (por segmentos máx. 1.121); el resto de parámetros $\le1.005$. $\mu$, $\tau$, $\lambda$ pasan en los tres escenarios |
+| Raftery–Lewis | **No pasa para $\lambda$ a 0.20** | $N_{\text{req}}=34{,}381>22{,}000$. $\sigma^2$ a 0.05 lo pide justo al límite (21,791) |
+| Efectivos (ESS) | **Bajos en colas** | $\lambda$ a 0.20: sólo 77 efectivos; $\lambda$ a 0.10: 245; $\sigma^2$ a 0.05: 116. Las medias de $\mu$ tienen 22,000 |
+| Geweke | Pasa (al límite en un caso) | Los 12 tests OK; $\mu$ a 0.05 con $z=-1.95$ (umbral 1.96) |
+| Heidelberger–Welch | Pasa | 12/12; $\lambda$ a 0.05 con $p=0.055$ (al límite) |
+| Chequeo predictivo previo | **Tensión en la DE** | DE observada 0.289–0.348 frente a rango previo $[0.10,0.28]$: las previas son algo más planas que los datos |
+| ppp — DE | **No pasa (3/3)** | ppp = 1.00: ninguna réplica alcanza la DE observada |
+| ppp — contraste vecinal | **No pasa a 0.05 y 0.10** | ppp = 0.00 (a 0.20 pasa con 0.53) |
+| Sensibilidad de previas (DIC) | Aviso leve | La previa informativa queda 6 puntos peor en DIC ($\tau$ se mueve un orden de magnitud); conclusiones inalteradas |
+| Sesgo de $\sigma^2$ | Confirmado a posteriori | $\Pr(\sigma^2<\sigma_0^2\mid y)=1$ en los tres escenarios |
+| $\widehat R$ multicaseno, sensibilidad de previas con más variantes en otros escenarios | **Pendiente** | Sólo cadena única; `sensibilidad.R` corrió sólo a 0.10 |
+
+**Qué tener en cuenta / qué mejorar:**
+
+1. **Las colas de $\lambda$ y $\sigma^2$ en ruido alto/bajo no están bien
+   resueltas** (ESS de 77–246, ACF$_{50}$ de 0.62–0.69). Las medias están
+   seguras; los cuantiles no tanto. **Mejora:** cadenas 5–10× más largas o
+   reparametrizar $(\tau,\lambda)$ (cambiar de dirección MH) para mejorar la
+   mezcla de $\lambda$.
+2. **Los dos fallos de ppp (DE y contraste) y la tensión previa en la DE
+   apuntan a la misma raíz:** el suavizado con un solo $\lambda$ no reproduce
+   la variabilidad de la imagen real. **Mejora:** $\lambda$ espacial, previas
+   de Laplace/$t$ sobre las diferencias (borres preservados) o una previa de
+   $\sigma^2$ mejor calibrada (zonas planas de la imagen).
+3. **El sesgo de $\sigma^2$ es estructural, no de muestreo** (prob = 1 en
+   todos los escenarios y ppp de DE = 1.00). **Mejora:** previa informativa
+   de $\sigma^2$ o estimación del ruido en regiones homogéneas.
+4. **Bug conocido en la propuesta de MH:** `chol(Cprop)` debería ser
+   `t(chol(Cprop))` y alargar la adaptación hacia 30 % de aceptación.
+5. **Pendientes declarados:** $\widehat R$ multicaseno (varias cadenas),
+   sensibilidad de previas en los escenarios 0.05 y 0.20, y ppp con más de 30
+   réplicas para mayor resolución (0.40 vs 0.60 con 30 muestras sólo da dos
+   cifras).
 
 # Referencias
 
@@ -898,3 +1189,7 @@ Rue, H., y Held, L. (2005). *Gaussian Markov random fields: Theory and
 applications*. Chapman & Hall/CRC.
 
 Strang, G. (1999). The discrete cosine transform. *SIAM Review*, 41(1), 135–147.
+
+Vehtari, A., Gelman, A., Simpson, D., Carpenter, B., y Bürkner, P.-C. (2021).
+Rank-normalization, folding, and localization: An improved $\widehat R$ for
+assessing convergence of MCMC. *Bayesian Analysis*, 16(2), 667–718.

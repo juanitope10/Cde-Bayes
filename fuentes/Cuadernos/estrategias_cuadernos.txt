@@ -1,0 +1,680 @@
+================================================================================
+ESTRATEGIAS Y METODOLOGIAS DE LOS CUADERNOS DEL CURSO
+Revisión cuaderno por cuaderno vs. nuestro proyecto de restauración de imágenes
+(3.1 exploración | 3.2 Ising | 3.3 GMRF grises | 3.4 GMRF RGB | 4 discusión)
+Fecha: 25-nov-2026
+================================================================================
+
+Convención de marcas:
+  [USADA]        = ya la usamos; se indica el archivo/ubicación exacta
+  [USADA-DEBIL]  = usada en forma parcial o informal; se puede formalizar
+  [CANDIDATA]    = aplica a nuestro proyecto y NO la hemos usado (oportunidad)
+  [NO APLICA]    = no tiene sentido en el caso de imágenes (se explica por qué)
+
+Ubicaciones citadas:
+  R/        = fuentes/Code/ (3.1.R, 3.2.R, 3.3.R, 3.4.R, 4.R, convergencia.R,
+              sensibilidad.R)
+  QMD/      = fuentes/*.qmd (ising, gmrf_grises, gmrf_rgb,
+              representacion_y_discusion, explicacion_completa)
+
+
+================================================================================
+01-INTRODUCCIÓN (Bayes, Beta-Binomial, previas, sensibilidad)
+================================================================================
+- Marco Bayes: verosimilitud x previa = posterior; núcleo (kernel) de la densidad
+  [USADA] -> derivación de condicionales completas en gmrf_grises.qmd y
+  gmrf_rgb.qmd (Proposiciones cond-x, cond-s2, cond-mu...) y en QMD/
+  explicacion_completa.qmd.
+- Conjugación Beta-Binomial por identificación del núcleo
+  [USADA-DEBIL] -> la técnica (identificar el núcleo) se usa en 3.3/3.4 para
+  IG de sigma² y Normal de mu; la familia Beta-Binomial como tal no aplica.
+- Previa difusa / no informativa (Beta(1,1))
+  [USADA] -> filosofía de previas débilmente informativas de 3.3/3.4
+  (Gamma(2,0.1), IG(2,0.01), N(0.5,0.25); QMD/ explicacion_completa "Anclar en
+  escalas conocidas").
+- Cálculo de cantidades posteriores por integración / cuantiles (IC95%)
+  [USADA] -> IC95% por cuantiles en 3.2/3.3/3.4 (diagnostico_param,
+  resumen_posterior) y en las tablas de los QMD.
+- ANÁLISIS DE SENSIBILIDAD de la previa (recalcular la posterior para varias
+  especificaciones de hiperparámetros)
+  [USADA] -> R/sensibilidad.R (variantes débil/informativa con mismas medias,
+  escenario sigma0=0.10 del 3.3) + tabla en gmrf_grises.qmd.
+- Comparación frecuentista (IC clásico)
+  [NO APLICA] -> el caso pide enfoque bayesiano completo; se compara contra la
+  VERDAD simulada (mejor que contra frecuentismo).
+- Ejercicios: pruebas diagnóstico (PPV/NPV), odds y likelihood ratio
+  [NO APLICA] -> dominio médico/electoral, no imágenes.
+- Ejercicios: transformaciones de variables (Gamma->inversa, logit de Beta,
+  Dirichlet como razón de Gammas)
+  [USADA] -> el truco 1/Gamma para simular la Inversa-Gamma en 3.3.R
+  (muestrear_sigma2) viene de esta técnica (citado en QMD/
+  explicacion_completa); el jacobiano de la escala log en las propuestas MH de
+  3.3/3.4 es la teoría de cambio de variable.
+- Ejercicios: valor esperado iterado / ley de la varianza total
+  [USADA-DEBIL] -> sustenta el uso de medias por píxel y DE (momentos
+  acumulados) en 3.3/3.4; no se demuestra explícitamente.
+- Ejercicios: previa como MEZCLA de dos Betas (pesos de la mezcla posterior)
+  [CANDIDATA] -> variante elegante para el análisis de sensibilidad:
+  una previa mezcla (p. ej. 50% G(2,0.1) + 50% G(0.5,0.025)) para lambda/tau.
+  Barato de implementar en sensibilidad.R.
+
+================================================================================
+02-INTERCAMBIABILIDAD (De Finetti, independencia condicional, decisiones)
+================================================================================
+- Independencia condicional: factorización del modelo
+  [USADA] -> fundamento de los tres modelos: píxeles condicionalmente
+  independientes dado el campo latente (formulación en 3.2/3.3/3.4 y sus QMD).
+- Teorema de De Finetti (iid con previa <=> intercambiabilidad)
+  [USADA-DEBIL] -> respalda la estructura jerárquica previa->campo->observación;
+  no se cita explícitamente en los informes.
+- Distribución predictiva posterior p(y*|y) por integración
+  [CANDIDATA] -> predicción de una NUEVA realización ruidosa y* dado el
+  posterior (¿cuánto ruido quedaría?). Extensión natural del caso (ver 05).
+- Toma de decisiones: utilidad esperada posterior, decisión óptima
+  [USADA-DEBIL] -> implícito: pérdida cuadrática -> media posterior (3.3/3.4),
+  pérdida 0-1 -> MAP (3.2). Se puede hacer explícito en los QMD (ver 04).
+
+================================================================================
+03-MODELO BINOMIAL (Beta-Binomial, familia exponencial, Jeffreys)
+================================================================================
+- Estadístico suficiente + Teorema de Factorización de Fisher-Neyman
+  [USADA] -> reducción de datos por estadísticos suficientes: acumulación de
+  momentos SUM(x), SUM(x^2) por píxel en 3.3.R/3.4.R (en lugar de guardar la
+  cadena completa) y estadísticos por grupo en el cálculo de sigma².
+- Familias conjugadas (familia exponencial de un parámetro)
+  [USADA] -> condicionales conjugadas de sigma² (IG), mu (Normal),
+  Sigma (IW), Omega (W) en 3.3/3.4.
+- Media posterior como promedio ponderado previa/datos ("tamaño muestral previo")
+  [USADA-DEBIL] -> se usa el mismo criterio para elegir hiperparámetros
+  (a+b como pseudo-muestras) en QMD/ explicacion_completa (previas).
+- Predicción por integración (predictiva posterior Beta-Binomial)
+  [CANDIDATA] -> ver predictiva posterior en 05.
+- Intervalos de credibilidad por percentiles; cobertura bayesiana vs frecuentista
+  [USADA] -> IC95% por cuantiles + cobertura empírica sobre la verdad simulada
+  (3.3/3.4 metricas: cobertura_IC95).
+- Previa de Jeffreys p(theta) prop sqrt(I(theta)); invarianza bajo
+  reparametrización
+  [CANDIDATA] -> usar la previa de Jeffreys como VARIANTE en sensibilidad.R
+  (p. ej. IG(1/2, ...) para sigma², que es la Jeffreys de la Normal) para
+  responder a los evaluadores con una batería de previas estándar.
+- Previa de información unitaria (unit information prior, Kass-Wasserman)
+  [CANDIDATA] -> otra variante estándar para sensibilidad: previa con la
+  información de una sola observación. Da rigor al "análisis de sensibilidad"
+  que pidieron los evaluadores.
+- Elicitación: reparametrización por media y tamaño previo (theta0, n0)
+  [USADA-DEBIL] -> equivalente a fijar medias previas (E[lambda]=20, etc.)
+  como hicimos; se puede explicitar la reparametrización en los QMD.
+- Previa como MEZCLA (pesos posteriores de la mezcla)
+  [CANDIDATA] -> ver 01.
+- Ejercicio: conjugación Multinomial-Dirichlet
+  [NO APLICA] -> sin categorías >2 en el caso (el Ising es Bernoulli).
+- Ejercicio: distribución de Galenshore
+  [NO APLICA] -> curiosidad teórica; sin uso posible aquí.
+
+================================================================================
+04-MODELO POISSON (Gamma-Poisson, bootstrap, pérdida, MAP+BCLT)
+================================================================================
+- Conjugación Gamma-Poisson; hiperparámetros como conteos previos
+  [USADA] -> mismas ideas en las previas Gamma de tau/lambda (3.3/3.4).
+- Comparación de dos grupos por simulación directa de las posteriores
+  [USADA] -> técnica de transformación de muestras (ver 05).
+- Bootstrap paramétrico y no paramétrico como comparación frecuentista
+  [NO APLICA] -> no compite con el enfoque bayesiano del caso; la comparación
+  válida es contra la verdad simulada.
+- Teoría de decisión: pérdida cuadrática -> media; pérdida absoluta -> mediana;
+  riesgo bayesiano vs frecuentista
+  [USADA-DEBIL] -> nuestros estimadores son exactamente los bayesianos bajo
+  pérdida cuadrática (3.3/3.4) y 0-1 (MAP del 3.2); conviene citarlo
+  explícitamente en los QMD para blindar la elección de estimador.
+- ESTIMADOR MAP + matriz Hessiana + TEOREMA DEL LÍMITE CENTRAL BAYESIANO
+  (aproximación normal N(theta_MAP, -H^-1) de la posterior)
+  [CANDIDATA] -> aproximación de Laplace/BCLT para los escalares
+  (beta, rho, tau, lambda, sigma²): verificación barata e independiente de
+  las posteriores MCMC (la moda + curvatura deberían parecerse a media/DE
+  de la cadena). Útil como chequeo extra de convergencia.
+- Previas de Jeffreys (Poisson: theta^-1/2) e impropiedad con condición de
+  posterior propia
+  [USADA-DEBIL] -> la discusión de impropiedad/propiedad está en
+  gmrf_grises.qmd (nota ICAR/rango); la Jeffreys como variante: [CANDIDATA].
+- Distribución gamma inversa GI por transformación; elicitación por media y DE
+  [USADA] -> GI(2,0.01) de sigma² en 3.3, elicitada por E[sigma²]=0.01
+  (documentado en QMD/ explicacion_completa).
+- Intervalo predictivo para observación futura
+  [CANDIDATA] -> ver predictiva en 05.
+- Ejercicio: sensibilidad de la previa de un parámetro con Gamma(12m, m)
+  [USADA] -> mismo diseño en R/sensibilidad.R.
+
+================================================================================
+05-MONTE CARLO (muestreo directo, EMC, ppp, transformación de muestras)
+================================================================================
+- Muestreo directo iid de la posterior + distribución empírica
+  [USADA] -> 3.2/3.3/3.4 muestrean de condicionales completas (la mayoría
+  exactas); el promediado de la cadena aproxima la posterior.
+- Estimación MC de E(g(theta)), varianza, prob. posterior por indicadoras
+  [USADA] -> pi_i = P(X_i=+1|y) por indicadoras en 3.2; P(eta>0) tipo
+  probabilidad posterior no se usa aún (ver candidatas).
+- EMC = s/sqrt(B); CVMC; margen de error MC; determinación de B
+  [USADA] -> EMC, CVMC y criterio CVMC<5% en todos los scripts
+  (diagnostico_param, resumen_posterior) y en las tablas de los QMD.
+- TRANSFORMACIÓN DE MUESTRAS para funcionales gamma = g(theta)
+  [USADA] -> pi_i, x_hat, DE por píxel (3.2-3.4); rho implícito en el Ising;
+  descomposición espectral de Sigma y correlaciones derivadas de las muestras
+  en 3.4 (interpretación dirección de brillo). QMD/ explicacion_completa la
+  lista como "usada en parte... fácil de añadir para derivados".
+- Bondad de ajuste interna con DISTRIBUCIÓN PREDICTIVA POSTERIOR (ppp):
+  simular y*, calcular t(y*), comparar con t(y)
+  [CANDIDATA] -> NUNCA LA HEMOS USADO. Aplica de forma directa: generar una
+  imagen replicada X* o Y* desde el posterior y comparar estadísticos
+  (contraste local, varianza, proporción de bordes) con los observados.
+  Es el chequeo de bondad de ajuste estándar del curso (aparece en 05, 06,
+  07, 08) y encaja con la crítica de los evaluadores sobre "evaluación
+  formal". Costo: unas pocas decenas de réplicas.
+- Diferencia entre inferencia sobre theta1-theta2 vs predictiva y*1-y*2
+  [USADA-DEBIL] -> analogo a nuestra distinción entre restauración (media
+  posterior) e incertidumbre (DE/IC); conviene citarlo.
+- Ejercicio: muestreo por GRILLA para la posterior de Cauchy (no conjugada)
+  [CANDIDATA-BAJA] -> la técnica (evaluar la posterior no normalizada en una
+  grilla, normalizar y muestrear) sirve para validar la condicional de
+  (tau, lambda) del 3.3 contra una discretización exacta. Chequeo de
+  implementación, no de inferencia.
+
+================================================================================
+06-MODELO NORMAL (Normal-GI conjugada, grid 2D, ppp, MSE vs MLE)
+================================================================================
+- Modelo conjugado Normal-Gamma Inversa; factorización de la posterior
+  [USADA] -> misma estructura en 3.3: p(x, mu, sigma², tau, lambda|y) con
+  condicionales derivadas por núcleo (QMD/ gmrf_grises.qmd).
+- Hiperparámetros como observaciones previas (kappa0, nu0 = pseudo-muestras)
+  [USADA-DEBIL] -> justificación de G(2,0.1)/IG(2,0.01) en QMD/
+  explicacion_completa; se puede explicitar más.
+- Previa impropia p(theta, sigma²) prop 1/sigma²; condición de posterior propia
+  [USADA] -> discusión de impropiedad del ICAR en gmrf_grises.qmd
+  (reforzada con la nota de rango D-1).
+- Muestreo ancestral jerárquico (primero sigma², luego theta|sigma²)
+  [USADA] -> es la estructura del barrido de Gibbs de 3.3/3.4.
+- Evaluación de la posterior en REJILLA 2D (grid 50x50, persp/image)
+  [USADA-DEBIL] -> la visualización de la cresta (tau, lambda) en 3.3 se
+  describió en QMD/ explicacion_completa (@sec-historial); una grilla
+  formal 2D de la condicional completa sería [CANDIDATA-BAJA] como figura
+  ilustrativa de por qué el MH conjunto es necesario.
+- Comparación gráfica MC vs exacta (histogramas vs densidad teórica)
+  [USADA] -> hist_params_0.10.png en 3.3 (histogramas de escalares).
+- MSE como pérdida: Bayes sesgado vs MLE insesgado, condición MSE_B < MSE_MLE
+  [USADA-DEBIL] -> nuestros estimadores son bayesianos bajo pérdida cuadrática
+  y se comparan con la verdad; la demostración formal no se incluye.
+- ppp con media y DE como estadísticos de prueba
+  [CANDIDATA] -> ver 05.
+- Ejercicio: MEZCLA FINITA de normales como previa multimodal
+  [CANDIDATA-BAJA] -> variante exótica de sensibilidad; probablemente overkill.
+- Ejercicio: probabilidades de ORDEN entre parámetros (theta_i < theta_j)
+  [CANDIDATA] -> P(lambda_grises > lambda_RGB) o comparaciones de incertidumbre
+  entre modelos por transformación de muestras; solo aplicable si se
+  compararan modelos sobre la MISMA imagen.
+- Ejercicio: modelo Normal truncado (theta > 0)
+  [NO APLICA] -> nuestras previas ya viven en dominios positivos (Gamma).
+
+================================================================================
+07-MUESTREADOR DE GIBBS (MCMC, ergodicidad, batería de diagnóstico)
+================================================================================
+- MUESTREADOR DE GIBBS con condicionales completas
+  [USADA] -> algoritmo central de 3.2 (tablero de ajedrez), 3.3 y 3.4.
+- Tablero de ajedrez / actualización vectorizada por bloques
+  [USADA] -> 3.2.R (muestreo condicional de un sitio), 3.3.R (muestrear_x),
+  3.4.R (factorización en 3 matrices 3x3 por tipo de grado).
+- Previa semiconjugada independiente (theta | sigma² NO ligados)
+  [USADA] -> nuestras previas son independientes (mu, tau, lambda, sigma²).
+- Elicitación con regla 3-sigma
+  [USADA] -> eleccion de previas por cobertura ([0,1] a ±1 DE para mu,
+  modas en escalas del ruido); documentado en QMD/.
+- Teoría de cadenas de Markov: ergodicidad, irreducibilidad, estacionariedad
+  [USADA] -> QMD/ explicacion_completa (adaptación SOLO en calentamiento para
+  preservar la convergencia ergódica) y discusiones de convergencia.
+- Diagnóstico: TRAZAS, ACF, n_eff (ESS con truncamiento), EMC, CVMC
+  [USADA] -> diagnostico_param en 3.2.R/3.3.R/3.4.R; figuras diag_*.png;
+  tablas de todos los QMD.
+- GELMAN-RUBIN (R-hat, varianza dentro/entre cadenas) con múltiples cadenas
+  [USADA-DEBIL] -> R/convergencia.R calcula split-R̂ (clásico y por rangos,
+  Vehtari 2021) sobre segmentos + R-hat con IC superior (gelman.diag); el
+  Gelman-Rubin multicaso VERDADERO (varias cadenas independientes) queda
+  como pendiente declarado.
+- heidel.diag, geweke.diag, raftery.diag (batería coda)
+  [USADA] -> R/convergencia.R (Heidelberger-Welch, Geweke, Raftery-Lewis)
+  sobre las trazas de 3.2/3.3/3.4.
+- TRAZA DE LA LOG-VEROSIMILITUD como diagnóstico
+  [CANDIDATA] -> NO almacenamos la log-verosimilitud por iteración en ningún
+  modelo. Es el diagnóstico estándar del curso (07, 08, 11, 12, 13) y además
+  habilita DIC/WAIC (ver 11). Costo: una evaluación por iteración. PRIORIDAD
+  ALTA.
+- Thinning por muestreo sistemático; adelgazamiento como remedio de
+  autocorrelación
+  [USADA] -> thin=10 (3.2), 20 (3.3), 40 (3.4); justificación de memoria en
+  QMD/ explicacion_completa.
+- Remedio de mezcla lenta: REPARAMETRIZAR el modelo
+  [CANDIDATA] -> p. ej. parametrizar (lambda, Omega) en 3.4 por el producto
+  lambda*Omega (la cresta) en lugar de por separado; o muestrear
+  (log tau, log lambda) reescalado. Es la causa declarada de la mezcla lenta
+  de lambda. Prioridad MEDIA-ALTA.
+- Predictiva posterior por simulación + ppp
+  [CANDIDATA] -> ver 05.
+- Ejercicios: representación jerárquica de la t (auxiliares), mezcla con
+  latentes, probit de Albert-Chib (normales truncadas), AR(1), t con
+  grados de libertad desconocidos + detección de outliers por auxiliares
+  [NO APLICA] -> son modelos de regresión/series; DATA AUGMENTATION como
+  principio sí podría usarse en el futuro (p. ej. variables latentes para
+  una previa robusta tipo t sobre las diferencias de vecinos = preservación
+  de bordes). Señalado como [CANDIDATA-EXT] en la sección final.
+
+================================================================================
+08-COMPARACION = "MODELOS MULTINIVEL" (jerárquico, ranking, shrinkage)
+================================================================================
+  (nota: el archivo se llama comparacion pero contiene modelos multinivel;
+   el 09-comparacion es su versión ampliada)
+- Modelo Normal multinivel (dentro/entre grupos); previas factorizadas GI/N
+  [USADA-DEBIL] -> nuestro GMRF es una jerarquía espacial (campo latente ->
+  observación) con el mismo tipo de condicionales; la estructura
+  "multinivel de grupos" no aplica a imágenes.
+- Muestreo por REJILLA para condicional sin forma cerrada (nu) con
+  estabilización exp(lp - max(lp))
+  [CANDIDATA-BAJA] -> ver 05 (validación de la condicional de tau/lambda).
+- Estadísticos suficientes por grupo para vectorizar
+  [USADA] -> acumulación de momentos en 3.3/3.4; identidades de sumas de
+  cuadrados en las condicionales de sigma².
+- Proporción de intravarianza eta = sigma²/(sigma²+tau²) por transformación
+  de muestras
+  [USADA] -> análogo: producto sigma²*lambda como medida de suavizado
+  (QMD/ representacion_y_discusion); las transformaciones de muestras se
+  usan en 3.4 (correlaciones de Sigma).
+- RANKING BAYESIANO de grupos con IC95% y CV; comparación con ranking muestral
+  [USADA-DEBIL] -> equivalente espacial: ranking departamental NO aplica,
+  pero el "ranking" de píxeles por incertidumbre (ordenar por DE) y la
+  clasificación MAP vs proporción muestral (imagen contaminada) son el
+  análogo en 3.2/3.3/3.4 (tabla de precisión por regiones).
+- CONTRACCIÓN (shrinkage): theta_hat vs y_bar; dependencia con n
+  [USADA] -> el suavizamiento GMRF/Ising ES contracción espacial; se explica
+  en QMD/ representacion_y_discusion ("Papel de la dependencia espacial").
+  Se puede citar el término técnico (shrinkage) para dar rigor.
+- Comparación informal de modelos: log-verosimilitudes, EEMC (boxplots),
+  densidades superpuestas, estimaciones cruzadas con IC
+  [CANDIDATA] -> la comparación de nuestros 3 modelos es cualitativa +
+  métricas (4.R) porque usan imágenes distintas; las cadenas de
+  log-verosimilitud comparables solo existirían para variantes del mismo
+  modelo (ver 11).
+- Mapas coropléticos con shapefiles (sf, geom_sf)
+  [NO APLICA] -> del otro proyecto; nuestras figuras son imágenes.
+- Sin ejercicios en este cuaderno.
+
+================================================================================
+08-NORMAL_MULTIVARIADO (Wishart/IW, semiconjugada, predictiva multivariada)
+================================================================================
+- Normal multivariada; estadísticos suficientes por trazas matriciales
+  [USADA] -> estructura del 3.4 (Y_i | X_i, Sigma ~ N_3); demostraciones
+  con trazas en gmrf_rgb.qmd (Proposición forma cuadrática y determinante).
+- DISTRIBUCIONES WISHART / WISHART INVERSA (densidades, E(W)=nu*S,
+  relación inversa)
+  [USADA] -> Sigma ~ IW_3 y Omega ~ W_3 en 3.4; convención de
+  parametrización (n*V, errata) documentada en 3.4.R y QMD/.
+- Previa semiconjugada independiente theta ~ N(mu0, Lambda0), Sigma ~ WI
+  [USADA] -> 3.4 (mu ~ N_3, Sigma ~ IW_3, Omega ~ W_3).
+- Elicitación de hiperparámetros con regla de cobertura (3-sigma),
+  correlación previa, nu0 = mínimo para que exista E(Sigma)
+  [USADA] -> 3.4: nu_eps=6>p+1 (media finita de IW), S_eps=0.01 I
+  (esférica), V_mu=0.25 I; documentado en gmrf_rgb.qmd (tabla de
+  hiperparámetros).
+- Atajo computacional de S_n con estadísticos suficientes
+  [USADA] -> 3.4.R (M = suma de productos externos + término de vecinos).
+- Muestreo Wishart/IW (rWishart, riwish) e inicialización desde la previa
+  [USADA] -> 3.4.R (muestreo por descomposición de Bartlett; bug de la
+  matriz de escala corregido y documentado).
+- Conjunta posterior (scatter) + PREDICTIVA POSTERIOR por simulación (Y*)
+  [CANDIDATA] -> la predictiva multivariada Y*_i ~ N_3(X_i, Sigma) daría el
+  chequeo ppp de color (ver 05). Fácil: las muestras ya están.
+- Probabilidades posteriores de CONTRASTES (P(theta2-theta1>0), etc.)
+  [CANDIDATA] -> P(lambda_RGB > lambda_grises) no aplica (imágenes
+  distintas), pero P(sigma² < sigma0²) o P(contraste de canales > 0) sí;
+  son probabilidades posteriores directas de las muestras. Costo ~0.
+- Inferencia sobre rho = sigma12/(sigma1*sigma2) por transformación
+  [USADA] -> 3.4 (correlaciones de Sigma_hat y su lectura vía autovalores).
+- ppp con correlación como estadístico de prueba
+  [CANDIDATA] -> ver 05.
+- Ejercicios: PREVIA DE JEFFREYS multivariada (prop |Sigma|^{-(p+2)/2},
+  impropia), unit information prior vía matriz de precisión, PREVIA
+  SEMICONJUGADA EMPÍRICA (centrada en estimaciones muestrales),
+  VERIFICACIÓN DE LA PREVIA POR SIMULACIÓN DESDE LA PREDICTIVA PREVIA
+  (prior predictive check) y sensibilidad comparando Jeffreys / unitaria /
+  difusa
+  [CANDIDATA] -> DOS herramientas muy recomendables y no usadas:
+  (1) PRIOR PREDICTIVE CHECK: simular desde la previa (p. ej. imágenes
+  simuladas con lambda ~ G(2,0.1), tau, sigma² previos) y verificar que
+  cubren escalas razonables antes de ver los datos. Responde a la crítica
+  de "falta de discusión rigurosa de previas" de los evaluadores.
+  (2) Las variantes Jeffreys/unit-information para la sensibilidad
+  (R/sensibilidad.R) dan estándar académico al análisis.
+
+================================================================================
+09-COMPARACION = "MODELOS MULTINIVEL" (versión ampliada: k-means, contracción)
+================================================================================
+- Todo lo del 08-comparacion (mismo desarrollo, versión expandida).
+- K-MEANS sobre medias posteriores + selección de K por WSS y regla
+  Delta_k < 0.2 (variante del codo)
+  [CANDIDATA] -> aplicación directa posible: SEGMENTACIÓN de la imagen
+  restaurada agrupando píxeles por (media posterior, DE, o valores RGB).
+  El caso no lo pide, pero sería la extensión natural "clasificación
+  bayesiana de regiones" y conecta con la observación de los evaluadores
+  sobre incertidumbre en asignación de grupos (la matriz de co-clustering
+  abajo la resuelve con rigor).
+- Ranking + CV bayesiano + contracción (igual que 08).
+- Ejercicios: predictiva para grupo observado y NO observado; ppp;
+  modelo t robusto con auxiliares y detección de outliers
+  [CANDIDATA-BAJA] -> predictiva para "grupo no observado" = predicción en
+  zona de la imagen con poca información (extensión). Modelo t robusto:
+  previa t sobre las diferencias de vecinos para NO difuminar bordes
+  (relacionado con las "penalizaciones robustas" que ya propone
+  gmrf_grises.qmd como limitación!). Merece mención en la sección final.
+
+================================================================================
+10-AGRUPAMIENTO (mezclas finitas, co-clustering, ARI, label switching)
+================================================================================
+- Modelo de mezcla finita con variables latentes de asignación
+  [NO APLICA] -> el caso no tiene mezclas; el Ising tiene latente binaria
+  (distinto).
+- Gibbs con condicionales de mezcla; estabilización log; inicialización con
+  k-means
+  [USADA-DEBIL] -> la estabilización exp(lp-max(lp)) es la misma que usamos
+  en MH (escala log); inicialización informada (x=y) en 3.2/3.3/3.4 cumple
+  el mismo rol que k-means.
+- Label switching, matriz de CO-CLUSTERING, clustering por probabilidades
+  (Mclust), ARI, permutation averaging
+  [NO APLICA] -> sin etiquetas intercambiables en los modelos del caso.
+  (El ARI/co-clustering sería relevante si se hiciera la segmentación
+  candidata del 09.)
+- Estimación de la DENSIDAD POBLACIONAL por promediado posterior con bandas
+  de incertidumbre (spaghetti de B curvas)
+  [USADA-DEBIL] -> equivalente: nuestras mapas de DE posterior y bandas IC95%
+  por píxel; el promediado de densidades como tal no aplica.
+- Estandarización de datos (scale/unscale)
+  [NO APLICA] -> las imágenes ya viven en [0,1] (documentado en QMD/
+  explicacion_completa).
+- Guardado de corridas costosas en .RData
+  [USADA] -> saveRDS de 3.2/3.3/3.4 + carpeta corrida/ + nota de
+  reproducibilidad (QMD/ representacion_y_discusion).
+
+================================================================================
+10-NORMAL_MULTIVARIADO (versión paralela al 08-normal_multivariado)
+================================================================================
+- Mismo contenido que 08-normal_multivariado (Wishart/IW, semiconjugada,
+  predictiva, transformación de muestras, ppp). Ver arriba; las marcas son
+  idénticas.
+- Diferencias menores: exploración previa con qq-plots y densidades kernel
+  [USADA-DEBIL] -> la exploración de 3.1.R (distribuciones, ruido) cumple
+  el mismo rol.
+
+================================================================================
+11-CRITERIOS (DIC, WAIC, BIC; devianza; comparación formal)
+================================================================================
+- Devianza -2 log p(y|theta) y corrección por complejidad
+  [CANDIDATA] -> ver DIC/WAIC.
+- DIC (p_DIC efectivo), WAIC (lppd + p_WAIC), BIC
+  [CANDIDATA] -> NO USADOS. El caso prescribe los 3 modelos (imágenes
+  distintas), pero DIC/WAIC SÍ sirven para comparar VARIANTES del mismo
+  modelo, que es justo lo que pidieron los evaluadores ("falta análisis de
+  sensibilidad / comparación formal"):
+    - 3.3: prior cuadrática (actual) vs robusta (TV / Laplace sobre
+      diferencias) -> arreglaría la "bordes difuminados" de la limitación 2.
+    - 3.3: lambda fijo vs lambda estimado.
+    - NO aplica al Ising: la verosimilitud es doblemente intractable
+      (constante de partición), DIC/WAIC no son calculables de forma simple.
+    Para GMRF la log-verosimilitud es evaluable (ya la necesitaríamos para
+    almacenarla, ver 07). PRIORIDAD ALTA como extensión.
+- Truco: almacenar la log-verosimilitud por iteración durante el MCMC
+  [CANDIDATA] -> misma recomendación que en 07. PRIORIDAD ALTA.
+- Gráficas comparativas de cadenas de log-verosimilitud entre modelos
+  [CANDIDATA] -> sigue de DIC/WAIC.
+- Ejercicio: modelo t robusto + DIC/WAIC/BIC de la variante
+  [CANDIDATA] -> refuerza la línea "modelo robusto + criterios" de arriba.
+
+================================================================================
+12-REGRESIÓN LINEAL (semiconjugada, g-prior, Ridge/Lasso, jerárquico)
+================================================================================
+- MC directo bajo previa g (Zellner); matriz hat H_g; integración analítica
+  [NO APLICA] -> el caso no tiene regresión. (Técnica disponible si el
+  proyecto se extendiera a modelos con regresores.)
+- Gibbs semiconjugado para regresión (beta Normal, sigma² GI)
+  [USADA-DEBIL] -> las condicionales de mu/sigma² en 3.3 son el caso
+  particular sin regresores; el formalismo de matrices de precisión es el
+  mismo que usamos (Q = tau I + lambda L).
+- Previas: unit information, g-prior, difusa independiente
+  [CANDIDATA] -> unit information y Jeffreys como variantes de
+  sensibilidad (ver 03/06).
+- RIDGE y LASSO bayesianos (hierarquía Normal-Exponencial, condicional GIG
+  con GIGrvg::rgig)
+  [NO APLICA] -> regularización de regresores; sin regresores aquí.
+- MAP = Ridge / MAP = Lasso (equivalencia con penalizaciones l2/l1)
+  [USADA-DEBIL] -> conexiones teóricas útiles: nuestra MAP del Ising es
+  energía penalizada (Ising MAP = corte de grafos) y el GMRF penaliza
+  diferencias cuadráticas; se puede citar la equivalencia
+  MAP<->penalización para dar marco a "penalizaciones robustas = previas
+  Laplace" (limitación 2 de gmrf_grises.qmd).
+- Modelo jerárquico con medias por grupo; marginal integrando mu_j;
+  coeficiente de variación intra-grupo
+  [NO APLICA] -> de grupos; el shrinkage sí (ver 08).
+- Muestreo discreto por grilla para nu (exp(lp-max(lp)))
+  [CANDIDATA-BAJA] -> ver 05.
+- Trucos: precomputar XtX/Xty/inversas, preasignación de memoria, thinning
+  (nskip=100), guardado .RData
+  [USADA] -> precomputo de estructura dispersa (Laplaciana, tableros) en
+  3.2/3.3/3.4; preasignación de cadenas (documentado en QMD/
+  explicacion_completa "reservar las cadenas antes del bucle"); thinning;
+  saveRDS.
+- Predicción en grilla (filled.contour), RMSE vs referencia externa
+  [NO APLICA] -> sin covariables.
+- Ejercicios: Boston Housing (predictiva para nuevas obs), Diabetes con
+  ESTANDARIZACIÓN de variables, interacciones/cuadráticas, train/test,
+  R² bayesiano, DIC/WAIC
+  [CANDIDATA-BAJA] -> el R² bayesiano y el train/test serían el análogo de
+  nuestras métricas MSE/SNR contra la verdad; ya lo hacemos mejor (verdad
+  conocida). DIC/WAIC: ver 11.
+
+================================================================================
+13-REGRESIÓN POISSON (Metropolis, MH, adaptativo, HMC)  <-- LA MÁS RELEVANTE
+================================================================================
+- ALGORITMO DE METROPOLIS (propuesta simétrica; razón de aceptación en
+  ESCALA LOG por estabilidad)
+  [USADA] -> 3.2.R (beta), 3.3.R (bloque tau-lambda), 3.4.R (lambda):
+  aceptación evaluada en escala log en los tres.
+- METROPOLIS-HASTINGS general (corrección de propuesta asimétrica)
+  [USADA-DEBIL] -> nuestras propuestas son simétricas (Normal en escala
+  log), caso particular de MH; la teoría general está citada en los QMD.
+- METROPOLIS ADAPTATIVO con Robbins-Monro: log delta_{t+1} = log delta_t +
+  gamma_t (alpha_t - alpha*), gamma_t = t^{-1/2}; objetivos 0.234 (dim alta)
+  / 0.44 (dim 1); adaptación SOLO en calentamiento
+  [USADA-DEBIL] -> usamos una regla de BLOQUES (s <- s*exp{1.5(alpha-0.30)}
+  cada 25-50 iteraciones, recortada) que logra el mismo efecto;
+  QMD/ explicacion_completa declara Robbins-Monro formal como "candidata
+  para después si se afinan cadenas". Ver CANDIDATA abajo.
+  [CANDIDATA] -> adoptar Robbins-Monro formal (gamma_t=t^{-1/2}) para la
+  adaptación de delta/s en 3.2/3.3/3.4. Ventaja: convergencia garantizada de
+  la adaptación, estándar del curso (cuaderno 13) citable ante evaluadores.
+  Costo: cambiar ~10 líneas por script.
+- Calibración de tasa de aceptación: objetivo 30-50% (Metropolis), 60-70%
+  (HMC); experimento con deltas 2^{-5..7} midiendo aceptación/ACF/ESS
+  [USADA] -> blanco 30% en 3.2/3.3/3.4 con banda 15-35%; el experimento
+  sistemático de deltas NO se hizo [CANDIDATA-BAJA] (útil solo si se
+  reajustan las cadenas).
+- HMC / leapfrog: impulso auxiliar, integración con L pasos, gradiente del
+  log-posterior, razón de aceptación conjunta; aceptación objetivo 60-70%
+  [CANDIDATA] -> NO USADO. QMD/ explicacion_completa lo lista "para después
+  si se escalan las imágenes". Aplicaría a 3.3/3.4 si se pasa a imágenes
+  mayores (1024x1024): el Gibbs de un sitio mezcla mal. Prioridad BAJA hoy,
+  ALTA si se escala.
+- GLM Poisson con enlace log; sin conjugación -> previa Normal; propuesta
+  multivariada con Cov = var(log(y+1)) (XtX)^-1
+  [USADA-DEBIL] -> nuestra propuesta bivariada adaptativa de 3.3
+  (covarianza normalizada a traza 1) es la misma idea: propuesta MVN
+  escalada por la curvatura/empírica.
+- Comparación de eficiencia Metropolis vs HMC por ESS
+  [USADA-DEBIL] -> comparamos eficiencia por n_eff/ESS en los diagnósticos.
+- Ejercicios: regresión logística, errores correlacionados, selección de
+  modelos
+  [NO APLICA] -> sin regresores.
+
+================================================================================
+14-EFFECTOS MIXTOS (jerarquía con IW, OLS por grupo, centramiento)
+================================================================================
+- Gibbs para efectos fijos/aleatorios; Sigma ~ IW; muestreo rWishart
+  [USADA] -> el muestreo IW/W de 3.4 viene de aquí y del 08-mv; la
+  estructura de efectos fijos/aleatorios como tal no aplica.
+- Previas "información unitaria" construidas con OLS por grupo
+  [CANDIDATA] -> idea transferible: centrar previas en estimaciones rápidas
+  (p. ej. la imagen contaminada y = x0 + ruido da estimaciones groseras de
+  mu y sigma²; ya lo hacemos con la inicialización x=y). Formalizarlo como
+  "previa empírica/información unitaria" daría marco citable.
+- Matrices de precisión acumuladas incrementalmente (sin armar diseño)
+  [USADA] -> 3.3/3.4: productos dispersos por bloques de tablero, logdet
+  espectral/Cholesky.
+- Centrado de covariables dentro del grupo
+  [NO APLICA] -> sin covariables.
+- Shrinkage de pendientes extremas; comparación OLS vs bayesiano
+  [USADA-DEBIL] -> ver contracción en 08.
+- Trucos: listas por grupo, preasignación, burn-in 5000/25000, .RData
+  [USADA] -> análogos en 3.2-3.4.
+
+================================================================================
+REDES_SOCIALES_INTRO (grafos descriptivos: igraph)
+================================================================================
+- Grafos: vértices/aristas, matriz de adyacencia, grado, distribución de
+  grado, densidad, transitividad/triángulos, asortatividad, layouts
+  (Fruchterman-Reingold)
+  [NO APLICA] -> introducción descriptiva de redes; sin inferencia. Nuestra
+  rejilla ES un grafo, pero las medidas descriptivas de redes no aportan al
+  caso. (Si algún día se modelara con ERGM o grafos aleatorios, sería la
+  base.)
+
+
+================================================================================
+RESUMEN: QUÉ USAMOS Y DÓNDE (índice rápido)
+================================================================================
+- Conjugación / condicionales completas (03,04,06,08) .... gmrf_grises.qmd,
+  gmrf_rgb.qmd, 3.3.R, 3.4.R
+- Gibbs + tablero de ajedrez (07) ........................ 3.2.R, 3.3.R, 3.4.R
+- Metropolis/MH en escala log + jacobiano (13, 01) ....... 3.2.R, 3.3.R,
+  3.4.R (paso_mh_*)
+- Adaptación de propuesta solo en calentamiento (13) ..... 3.2/3.3/3.4.R
+- Calibración a 30% de aceptación (13) ................... 3.2/3.3/3.4.R
+- Wishart/IW (Bartlett, convención n*V) (08,14) .......... 3.4.R
+- Estadísticos suficientes / momentos (03,06,08) ......... 3.3.R, 3.4.R
+- Matrices de precisión dispersas, logdet (12,14) ........ 3.3.R, 3.4.R
+- Transformación de muestras g(theta) (05,08) ............ 3.2.R (pi_i, MAP),
+  3.4.R (Sigma, correlaciones), 4.R
+- Pérdida cuadrática -> media; 0-1 -> MAP (04) ........... 3.3/3.4.R, 3.2.R
+- IC por cuantiles + cobertura empírica (03,05) .......... 3.2/3.3/3.4.R
+- Diagnóstico: traza, ACF, ESS, EMC, CVMC (07) .......... 3.2/3.3/3.4.R
+- Geweke, Heidelberger-Welch, Raftery-Lewis (07) ......... convergencia.R
+- Gelman-Rubin / split-R̂ (07 + Vehtari 2021, más allá
+  del curso) ............................................. convergencia.R
+- Thinning, burn-in, preasignación de memoria (07,12,13) . 3.2/3.3/3.4.R,
+  explicacion_completa.qmd
+- Elicitación por escalas/cobertura (03,06,07,08) ........ gmrf_*.qmd,
+  explicacion_completa.qmd
+- Sensibilidad de previas (01,04) ........................ sensibilidad.R
+- Inversa-Gamma = 1/Gamma (01,06) ........................ 3.3.R
+- Guardado de corridas costosas (10,12,14) ............... saveRDS + corrida/
+- De Finetti / independencia condicional (02) ............ formulación de
+  los tres modelos
+- Shrinkage/contracción espacial (08,14) ................. representacion_
+  y_discusion.qmd (interpretación)
+
+================================================================================
+CANDIDATAS QUE AÚN NO USAMOS (por prioridad)
+================================================================================
+[ACTUALIZACIÓN] Las candidatas 1, 2, 3, 4, 6 y 9 de esta lista QUEDARON
+IMPLEMENTADAS (ver sección "ESTADO FINAL" al pie). Se conserva la lista
+original con marcas para referencia.
+
+PRIORIDAD ALTA (aplican ya, costo bajo-medio, responden a los evaluadores):
+
+ 1. TRAZA DE LA LOG-VEROSIMILITUD POR ITERACIÓN (07,08,11,12,13). [IMPLEMENTADA]
+    -> verificaciones.R: log-verosimilitud MARGINAL espectral (base de cosenos
+    2D) por iteración para 3.3 y 3.4; trazas ll_traza_*.png. El Ising se
+    excluye (verosimilitud doblemente intractable).
+
+ 2. DIC y WAIC PARA VARIANTES DEL MISMO MODELO (11). [IMPLEMENTADO]
+    -> verificaciones.R (DIC marginal por escenario: dic.csv) y
+    sensibilidad.R (DIC + WAIC condicional acumulado en el MCMC entre cinco
+    variantes de previa: sensibilidad_dic_waic.csv).
+
+ 3. POSTERIOR PREDICTIVE CHECKS / ppp (05,06,07,08). [IMPLEMENTADOS]
+    -> verificaciones.R: réplicas y* desde el posterior con muestreo GMRF
+    exacto (Cholesky disperso) para 3.3 y 3.4; ppp.csv + figuras ppp_*.png.
+
+ 4. PRIOR PREDICTIVE CHECK (08-mv ejercicios). [IMPLEMENTADO]
+    -> verificaciones.R: 30 imágenes simuladas desde las previas de 3.3 y 3.4;
+    prior_predictivo.csv/.png.
+
+ 5. ROBBINS-MONRO FORMAL (gamma_t = t^{-1/2}) EN LA ADAPTACIÓN (13). [PENDIENTE]
+    No se hizo: cambiaría las cadenas y anularía la reproducción exacta de los
+    resultados documentados. Solo si se decide una "v2" de las corridas.
+
+ 6. VARIANTES JEFFREYS / INFORMACIÓN UNITARIA EN LA SENSIBILIDAD
+    (03,04,06,08,12). [IMPLEMENTADAS]
+    -> sensibilidad.R: 5 variantes (base, débil, informativa, jeffreys
+    p(θ)∝1/θ, unit-info para σ²) sobre el mismo escenario y semilla.
+
+PRIORIDAD MEDIA:
+
+ 7. REPARAMETRIZACIÓN PARA MEZCLAR MEJOR (07): atacar la cresta
+    (lambda, Omega) del 3.4 parametrizando por el producto lambda*Omega o
+    escalando; es la causa declarada del R̂ alto de lambda. Costo: medio.
+
+ 8. APROXIMACIÓN MAP + HESSIANA + BCLT/LAPLACE (04): verificación
+    independiente de las posteriores escalares. Costo: bajo-medio.
+
+ 9. PROBABILIDADES POSTERIORES DE CONTRASTES (08-mv): P(sigma² < sigma0²),
+    P(contraste de canales > 0), etc., por transformación de muestras.
+    Costo: muy bajo. [IMPLEMENTADAS] -> verificaciones.R: contrastes.csv
+    (P(beta > beta_c), P(rho < rho0), P(sigma2 < sigma0²), P(tau < 0.01),
+    P(lambda > 20), P(Sigma_cc < sigma0²), P(lambda > 400)).
+
+10. MEZCLA DE PREVIAS PARA lambda/tau (01 ejercicios): variante de
+    sensibilidad multimodal. Costo: bajo.
+
+PRIORIDAD BAJA / EXTENSIONES (si se crece el proyecto):
+
+11. HMC/leapfrog (13) si se pasa a imágenes grandes.
+12. PREVIA ROBUSTA TIPO t CON AUXILIARES sobre diferencias de vecinos
+    (07,09 ejercicios): preserva bordes; se puede comparar con la
+    cuadrática vía DIC/WAIC (punto 2). Extensión estrella conjunta.
+13. SEGMENTACIÓN K-MEANS SOBRE MEDIAS POSTERIORES + co-clustering/ARI
+    (09,10): clasificación bayesiana de regiones con incertidumbre de
+    asignación (la matriz de co-clustering resuelve la crítica de los
+    evaluadores sobre "asignación sin incertidumbre").
+14. PREDICTIVA POSTERIOR para una nueva realización ruidosa (02,05,08).
+15. Validación de la condicional (tau, lambda) por REJILLA (05 ejercicios).
+16. Experimento sistemático de escalas de propuesta delta (13).
+
+ESTADO FINAL (resumen de lo implementado en esta iteración)
+================================================================================
+- convergencia.R   : split-R̂ (clásico + rangos), ESS bulk/tail,
+                     Heidelberger-Welch, Raftery-Lewis, Geweke, ACF sobre las
+                     trazas de 3.2/3.3/3.4 (convergencia/*.csv/.png).
+- verificaciones.R : log-verosimilitud marginal espectral + DIC (3.3, 3.4),
+                     chequeo predictivo previo y posterior (3.3, 3.4),
+                     probabilidades de contrastes (3.2, 3.3, 3.4)
+                     (verificacion/*.csv/.png).
+- sensibilidad.R   : 5 variantes de previa (base, débil, informativa, Jeffreys,
+                     unit-info) con DIC y WAIC comparativos
+                     (sensibilidad/*.csv/.png).
+- Documentación    : secciones nuevas y expandidas en ising.qmd,
+                     gmrf_grises.qmd, gmrf_rgb.qmd,
+                     representacion_y_discusion.qmd y explicacion_completa.qmd
+                     (punto 17).
+
+NO APLICAN AL CASO (quedan registradas para otros proyectos):
+  bootstrap paramétrico/no paramétrico; regresión (lineal, Poisson,
+  logística), g-prior, Ridge/Lasso, GIG; modelos multinivel de grupos,
+  ranking departamental, mapas coropléticos; mezclas finitas, label
+  switching, co-clustering, ARI; redes sociales (igraph); estandarización
+  de datos; previas Beta/Multinomial-Dirichlet/Galenshore.
+
+================================================================================
+FIN
+================================================================================

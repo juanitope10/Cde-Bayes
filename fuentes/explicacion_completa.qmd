@@ -241,6 +241,19 @@ con un suelo de 0.05 en el denominador (cuando $\hat x_i \approx 0$ el CVMC puro
 no es interpretable) y con $n_{\text{eff}}$ por columna de la cadena
 adelgazada.
 
+Sobre las trazas guardadas, `convergencia.R` añade la batería completa que
+piden los criterios modernos de diagnóstico: **$\widehat R$ de Gelman–Rubin
+sobre segmentos** (*split-R̂*, clásico y por rangos con su IC superior vía
+`gelman.diag`), **ESS *bulk* y *tail*** (sobre rangos), **Heidelberger–Welch**
+(estacionariedad y semi-amplitud), **Raftery–Lewis** (iteraciones necesarias
+para el cuantil 2.5 %) y ACF numérica en retardos fijos. Como cada escenario
+corre una sola cadena, la traza post-calentamiento se divide en 4 segmentos y
+el $\widehat R$ se calcula entre ellos: detecta deriva y mezcla lenta dentro de
+la cadena (así marcó la cola de $\beta$ en el 3.2 y de $\lambda$ en el 3.4),
+pero no sustituye a varias cadenas independientes. Los resultados por modelo y
+escenario quedan en `Code/resultados/convergencia/` (CSV y PNG de trazas por
+segmentos + ACF).
+
 ### 9. Calibración de la propuesta y adaptación solo en el calentamiento
 
 **Qué es.** El cuaderno 13-regresion_poisson enseña que la escala de la
@@ -355,25 +368,103 @@ la simulación se paga una sola vez.
 resúmenes y cadenas ligeras, y este documento lee esos `.rds` en sus chunks de
 tablas: los resultados se **conservan y reutilizan**, no se recalculan.
 
+### 17. Verificación bayesiana: log-verosimilitud, DIC/WAIC, predictivas y contrastes
+
+Batería añadida en `verificaciones.R` y `sensibilidad.R` que ejecuta los
+chequeos estándar del curso (cuadernos 04, 05, 06, 08, 11) que faltaban en el
+proyecto. Se calcula **sobre las cadenas guardadas**, sin re-correr los MCMC
+salvo la sensibilidad (corridas baratas de un solo escenario).
+
+**17.1 Log-verosimilitud marginal por iteración.** Es el diagnóstico estándar
+del cuaderno 07 (traza de la log-verosimilitud) y el insumo de DIC/WAIC.
+El problema: en los GMRF la verosimilitud marginal
+$p(\boldsymbol y\mid\theta)=\textsf{N}_{P}(\mu\boldsymbol 1,\ \sigma^2\mathbf I+\mathbf Q^{-1})$
+exige $\log|\Sigma_y|$ y una forma cuadrática de una matriz $P\times P$. La
+solución es la misma base espectral del log-determinante: con $w_k$ los
+autovalores de $\mathbf L$ y $\tilde{\boldsymbol y}=\mathbf V^\mathsf{T}(\boldsymbol y-\mu\boldsymbol 1)$
+(transformada coseno 2D, $O(P)$ por la estructura de Kronecker del operador),
+$$\log p(\boldsymbol y\mid\theta)=-\frac P2\log 2\pi-\frac12\sum_k\log s_k-\frac12\sum_k\frac{\tilde y_k^2}{s_k},\qquad s_k=\sigma^2+\frac1{\tau+\lambda w_k}.$$
+Para el RGB, cada modo $k$ tiene bloque de covarianza
+$\mathbf B_k=\mathbf\Sigma+c_k\mathbf\Omega^{-1}$ ($3\times3$,
+$c_k=(1+\lambda w_k)^{-1}$) y la suma de $\log|\mathbf B_k|$ y las formas
+cuadráticas se vectoriza con la descomposición espectral de
+$\mathbf\Omega^{1/2}\mathbf\Sigma\mathbf\Omega^{1/2}$. **Validación:** contra
+`mvtnorm::dmvnorm` con la covarianza densa en una rejilla $6\times5$: error
+$<10^{-8}$ (chequeo que corre al inicio de cada ejecución). Para el Ising no
+aplica: su verosimilitud es doblemente intractable.
+
+**17.2 DIC.** $\text{DIC}=-2\log p(\boldsymbol y\mid\bar\theta)+2p_D$ con
+$p_D=2\{\log p(\boldsymbol y\mid\bar\theta)-\text{E}[\log p(\boldsymbol y\mid\theta)]\}$,
+todo por Monte Carlo sobre la traza de la log-verosimilitud marginal. Mide
+ajuste + complejidad efectiva; $p_D$ pequeño (2–14) confirma que los datos
+dominan las previas.
+
+**17.3 WAIC.** Criterio completamente bayesiano del cuaderno 11:
+$\text{WAIC}=-2\,\text{lppd}+2p_{\text{WAIC}}$ con
+$\text{lppd}=\sum_i\log\big(\frac1T\sum_t p(y_i\mid\theta^{(t)})\big)$ y
+$p_{\text{WAIC}}=\sum_i\text{Var}_t[\log p(y_i\mid\theta^{(t)})]$.
+Se acumula *dentro* del MCMC (`cfg$waic` en `3.3.R`, sin consumir aleatoriedad)
+con la verosimilitud condicional punto a punto $p(y_i\mid x_i,\sigma^2)$.
+Se usa para lo único que tiene sentido aquí: comparar **variantes de previa
+del mismo modelo sobre los mismos datos** (no para elegir entre los tres
+modelos del caso, que viven sobre imágenes distintas y no comparten
+verosimilitud).
+
+**17.4 Chequeo predictivo previo (*prior predictive check*).** Antes de ver los
+datos, se simulan imágenes completas desde las previas ($\theta\sim p(\theta)$,
+$\boldsymbol x\sim p(\boldsymbol x\mid\theta)$, $\boldsymbol y\sim p(\boldsymbol y\mid\boldsymbol x,\theta)$)
+y se comprueba que las escalas resultantes (media, DE, contraste entre vecinos)
+cubren lo razonable. Verifica que las previas no son absurdas — el chequeo de
+previas que piden los estándares de modelado bayesiano.
+
+**17.5 Chequeo predictivo posterior (ppp, cuadernos 05–08).** Se simulan
+imágenes **replicadas** desde el posterior ($\theta^{(t)}$ de la cadena,
+$\boldsymbol x^*\sim p(\boldsymbol x\mid\theta^{(t)})$ por muestreo GMRF exacto
+con Cholesky disperso, $\boldsymbol y^*\sim p(\boldsymbol y\mid\boldsymbol x^*,\theta^{(t)})$)
+y se comparan estadísticos $t(\cdot)$ (media, DE, contraste) de $\boldsymbol y^*$
+con los de $\boldsymbol y$ observado: $\text{ppp}=\Pr\{t(\boldsymbol y^*)\le t(\boldsymbol y)\}$.
+Valores cerca de 0.5 = el modelo reproduce ese aspecto de los datos; cerca de
+0 o 1 = falla ahí. Es la bondad de ajuste formal que faltaba (la verdad
+conocida mide la restauración, pero no "qué tan bien se ajusta el modelo").
+
+**17.6 Probabilidades posteriores de contrastes** (transformación de muestras,
+cuadernos 04/05/08): $\Pr(\beta>\beta_c\mid y)$, $\Pr(\sigma^2<\sigma_0^2\mid y)$,
+$\Pr(\tau<0.01\mid y)$, etc., directamente como fracción de la cadena. Preguntas
+probabilísticas sobre los parámetros sin nuevas suposiciones.
+
+**17.7 Sensibilidad de previas con variantes estándar** (`sensibilidad.R`):
+cinco variantes sobre el mismo escenario y la misma semilla — base, débil,
+informativa (mismas medias previas), **Jeffreys** ($p(\theta)\propto1/\theta$,
+impropias de escala; el MH y el Gibbs de $\sigma^2$ las aceptan tal cual) e
+**información unitaria** para $\sigma^2$ ($\textsf{GI}(1/2,\ \widehat\sigma_y^2/2)$:
+la información de una sola observación). Se comparan medias posteriores, MSE,
+DIC y WAIC entre variantes.
+
+**Dónde lo usamos.** `verificaciones.R` (log-verosimilitud, DIC, predictivas,
+contrastes; salidas en `Code/resultados/verificacion/`) y `sensibilidad.R`
+(las cinco variantes con DIC/WAIC; `Code/resultados/sensibilidad/`). Los
+resultados e interpretaciones están en los documentos de cada modelo y en el
+informe de discusión.
+
 ## Estrategias de los cuadernos que NO usamos (y por qué)
 
 | Estrategia | Cuaderno | ¿Por qué no? / ¿Para cuándo? |
 |:--|:--|:--|
-| **Chequeo predictivo posterior (ppp)** con datos replicados | 05, 06, 08-mult, 12 | El caso tiene la **verdad conocida**: se evalúa contra $\boldsymbol{X}^{(0)}$ (MSE, precisión, cobertura), que es un chequeo más fuerte. El ppp sería útil si se ajustara a datos reales sin verdad de referencia — **candidato para después** (crítica del modelo) |
-| **DIC / WAIC** para comparar modelos | 11-criterios | El caso **prescribe los modelos** (Ising, GMRF, GMRF multivariado); no hay selección de modelo que hacer. Para el informe comparativo entre modelos, DIC/WAIC serían un complemento **para después** |
+| **Chequeo predictivo posterior (ppp)** con datos replicados | 05, 06, 08-mult, 12 | **Implementado** (punto 17.5) para los GMRF con muestreo exacto del campo latente; además se evalúa contra la verdad conocida, que es un chequeo más fuerte sobre la restauración. En el Ising se omite (replicar $\boldsymbol X^*$ exige MCMC extra) |
+| **DIC / WAIC** para comparar modelos | 11-criterios | **Implementado** (puntos 17.2–17.3) para comparar **variantes de previa del mismo modelo** (es lo único comparable: los tres modelos del caso viven sobre imágenes distintas) |
 | **Bootstrap** paramétrico y no paramétrico | 04, 06 | Son el contraste frecuentista de los cuadernos; aquí el enfoque es bayesiano completo y el benchmark es la verdad simulada |
 | **Metropolis adaptativo formal** (Robbins-Monro, $\gamma_t = t^{-1/2}$) | 13 | Usamos una regla de bloques más simple con el mismo efecto (blanco 30%, solo en calentamiento). La versión formal es **candidata para después** si se afinan cadenas |
 | **HMC con leapfrog** | 13 | Gibbs + MH cubren los modelos del caso; HMC exige gradientes de la log-posterior y su ganancia se ve en dimensiones altas de parámetros continuos. **Para después** si se escalan las imágenes |
 | **Muestreo por rejilla en escala log** para condicionales discretas (`exp(lp - max(lp))`) | 08-comparacion, 09 | Nuestras condicionales no cerradas son continuas ($\tau,\lambda$) y van con MH; la rejilla serviría si se pone una previa discreta a algún hiperparámetro |
 | **Integración numérica por grilla** de posteriores no cerradas | 05 (ejercicio) | Innecesaria con MCMC en los modelos del caso |
 | **Data augmentation** para modelos $t$ / probit ($\zeta_i^2$, $z_i$) | 07 (ejercicios) | Son de otros modelos; la idea de auxiliares sí se usa (intercambio) |
-| **Gelman-Rubin con varias cadenas** y batería `heidel/raftery.diag` | 07 | Cada escenario corre **una** cadena larga; la estabilidad se verificó con cadenas independientes e inicializaciones opuestas (ver punto 3.3). Un Gelman-Rubin formal con 4 cadenas es **candidato para después** |
+| **Gelman-Rubin con varias cadenas** y batería `heidel/raftery.diag` | 07 | Cada escenario corre **una** cadena larga; la estabilidad se verificó con cadenas independientes e inicializaciones opuestas (ver punto 3.3). La batería `heidel/raftery.diag` y el $\widehat R$ sobre segmentos (split-R̂ por rangos) están **implementados** en `convergencia.R`; el Gelman–Rubin multicaso con 4 cadenas independientes sigue siendo **candidato para después** |
 | **Label switching, co-clustering, ARI, k-means** | 09, 10-agrupamiento | No hay modelos de mezcla ni agrupamiento en el caso |
 | **Estandarización de datos (scale/unscale)** | 10-agrupamiento | Las imágenes ya viven en $[0,1]$: las previas se eligen directamente en esa escala |
-| **Regularización Ridge/Lasso, g-prior, previas unitarias** | 12 | Son estrategias de regresión lineal; el caso no tiene estructura de regresión |
+| **Regularización Ridge/Lasso, g-prior** | 12 | Son estrategias de regresión lineal; el caso no tiene estructura de regresión. La idea de **previa de información unitaria** sí se usa (variante de sensibilidad de $\sigma^2$, punto 17.7) |
 | **Modelos multinivel / efectos mixtos** | 08-comparacion, 09, 14 | Otros problemas (grupos, escuelas); el caso es un campo latente sobre rejilla |
 | **Reducción de varianza de Monte Carlo** (antitéticas, variables de control, estratificación) | — | Tampoco aparecen en los cuadernos; con $n_{\text{eff}}$ suficiente y CVMC < 5% no hacen falta aquí, pero son una opción estándar si algún parámetro quedara con mezcla pobre |
-| **Transformación de muestras para funcionales $g(\theta)$** | 04, 05, 08 | Sí se usa en parte ($\pi_i$, medias y DE por píxel se obtienen de las cadenas), pero no se explota explícitamente para derivados; fácil de añadir después |
+| **Transformación de muestras para funcionales $g(\theta)$** | 04, 05, 08 | **Implementado** (punto 17.6): probabilidades posteriores de contrastes ($\Pr(\beta>\beta_c)$, $\Pr(\sigma^2<\sigma_0^2)$, ...) además de $\pi_i$, medias y DE por píxel |
 
 ## Estrategias que añadimos más allá de los cuadernos
 
@@ -397,6 +488,17 @@ espíritu:
    la incertidumbre (49% a ruido bajo, 91–97% en el resto: hallazgo del caso).
 7. **MH conjunto con covarianza adaptativa bivariada** normalizada a traza 1
    (extensión de la adaptación del cuaderno 13).
+8. **Split-$\widehat R$ por rangos** (Vehtari et al., 2021: más allá de la
+   formulación clásica del cuaderno 07) con ESS *bulk*/*tail* y batería
+   `heidel/raftery/geweke` sobre las trazas guardadas (`convergencia.R`).
+9. **Log-verosimilitud marginal espectral**: base de cosenos 2D de la
+   Laplaciana (Kronecker de dos DCT) para evaluar
+   $\log p(\boldsymbol y\mid\theta)$ en $O(P)$ por iteración, con
+   vectorización del caso multivariado por la descomposición de
+   $\mathbf\Omega^{1/2}\mathbf\Sigma\mathbf\Omega^{1/2}$ (punto 17.1).
+10. **Muestreador GMRF exacto** con Cholesky disperso permutado (Rue, 2001)
+    para simular $\boldsymbol x^*\mid\theta$ y $\boldsymbol X^*\mid\theta$ en
+    los chequeos predictivos (puntos 17.4–17.5).
 
 # Convenciones comunes a todos los scripts
 
@@ -475,6 +577,13 @@ criterios que usé es:
 | CVMC$(\%) = 100\cdot\text{EMC}/|\text{media}|$ | $<5\%$ en **todo** parámetro escalar | estándar del curso (cuaderno 07) |
 | Tasa de aceptación MH | blanco $\approx 30\%$ (banda de trabajo 15–35%) | cuaderno 13-regresion_poisson |
 | $n_{\text{eff}}$ (tamaño efectivo) | suficiente para que el EMC sea despreciable frente a la DE posterior | cuaderno 07 |
+| Split-$\widehat R$ por rangos (Vehtari et al.) | $<1.01$ entre segmentos de la cadena | diagnóstico bayesiano moderno (`convergencia.R`) |
+| Heidelberger–Welch | no rechazar estacionariedad ($p>0.05$) y semi-amplitud $<$ 10 % de la DE | `heidel.diag` de `coda` |
+| Raftery–Lewis | iteraciones necesarias $\le$ iteraciones disponibles (cuantil 2.5 %) | `raftery.diag` de `coda` |
+| Sensibilidad a las previas | conclusiones estables al debilitar/informatizar previas con las mismas medias | verificación propia (`sensibilidad.R`) |
+| DIC / WAIC entre variantes de previa | diferencias $<2$ puntos = sin evidencia clara de preferencia | cuaderno 11-criterios |
+| ppp (bondad de ajuste) | valores intermedios (0.05–0.95): el modelo reproduce el estadístico; extremos: falla ahí | cuadernos 05, 06, 08 |
+| Chequeo predictivo previo | las escalas simuladas desde la previa cubren las razonables | estándar de modelado bayesiano |
 | *Burn-in* | se descarta hasta estabilizar traza y aceptación | cuadernos 07 y 10 |
 | *Thin* (adelgazamiento) | el mínimo que cabe en memoria sin perder cuantiles ni IC95% por píxel | restricción de memoria |
 | Validación de métodos numéricos | coincidencia relativa $<10^{-8}$ entre métodos exactos (log-determinante) | verificación propia |
@@ -488,7 +597,9 @@ anteriores con el coste mínimo**, no cuando maximiza un solo número. La
 verificación que se ejecuta en cada punto es:
 
 1. **Diagnóstico de convergencia**: traza, ACF, z de Geweke, $n_{\text{eff}}$,
-   EMC y CVMC $<5\%$ en todos los escalares.
+   EMC y CVMC $<5\%$ en todos los escalares, más split-R̂ por rangos,
+   Heidelberger–Welch y Raftery–Lewis sobre las trazas guardadas
+   (`convergencia.R`).
 2. **Tasas de aceptación dentro de la banda de trabajo** (15–35%); si quedan
    fuera, comprobar que el criterio que manda — el CVMC — sí se cumple.
 3. **Contraste con la verdad conocida**: el caso simula la imagen original, así
@@ -497,7 +608,11 @@ verificación que se ejecuta en cada punto es:
 4. **Pruebas de estabilidad**: cadenas más largas, inicializaciones opuestas y
    métodos numéricos alternativos validados entre sí (cronología en
    @sec-historial).
-5. **Coste medido**: tiempos por escenario y *benchmarks*; entre dos
+5. **Verificación bayesiana del ajuste**: log-verosimilitud marginal (traza y
+   DIC), chequeo predictivo previo y posterior (ppp), probabilidades
+   posteriores de contrastes (puntos 17.1–17.6) y sensibilidad de previas con
+   cinco variantes estándar comparadas por DIC/WAIC (punto 17.7).
+6. **Coste medido**: tiempos por escenario y *benchmarks*; entre dos
    configuraciones igualmente válidas estadísticamente, se elige la más rápida.
 
 Con este marco, la justificación detallada de cada modelo está en @sec-just-32
